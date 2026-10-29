@@ -1,0 +1,76 @@
+import type { ApiKey } from "../api/keys";
+import type { KeyUsage } from "../api/analytics";
+import { formatDateTime, formatNumber, toNumber } from "../utils/format";
+
+interface KeysTableProps {
+  keys: ApiKey[];
+  usageBy: Record<number, KeyUsage | undefined>;
+  onEdit: (key: ApiKey) => void;
+  onRevoke: (key: ApiKey) => void;
+}
+
+/** Keys table on the Keys tab. Shows limits, status, last used, and requests. */
+export function KeysTable({ keys, usageBy, onEdit, onRevoke }: KeysTableProps) {
+  return (
+    <div className="table-wrap">
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Prefix</th>
+            <th className="num">Capacity</th>
+            <th className="num">Refill/s</th>
+            <th>Status</th>
+            <th>Expires</th>
+            <th>Last used</th>
+            <th className="num">Requests</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {keys.map((k) => {
+            const usage = usageBy[k.id];
+            return (
+              <tr key={k.id}>
+                <td>{k.name}</td>
+                <td className="mono">{k.prefix}…</td>
+                <td className="num">{k.capacity}</td>
+                <td className="num">{toNumber(k.refillPerSec) ?? "—"}</td>
+                <td>
+                  <span
+                    className={`status-pill status-pill--${
+                      k.status === "ACTIVE" ? "active" : "revoked"
+                    }`}
+                  >
+                    {k.status === "ACTIVE" ? "Active" : "Revoked"}
+                  </span>
+                </td>
+                <td>{formatDateTime(k.expiresAt)}</td>
+                <td>{formatDateTime(k.lastUsedAt)}</td>
+                <td className="num">{usage ? formatNumber(usage.total) : "—"}</td>
+                <td className="row-actions">
+                  <button
+                    type="button"
+                    className="btn btn--ghost btn--sm"
+                    onClick={() => onEdit(k)}
+                    disabled={k.status !== "ACTIVE"}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--danger-ghost btn--sm"
+                    onClick={() => onRevoke(k)}
+                    disabled={k.status !== "ACTIVE"}
+                  >
+                    Revoke
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
