@@ -40,17 +40,15 @@ public class RateLimiterRegistry {
     }
 
     public TokenBucket.Decision tryConsume(Long keyId, int capacity, double refillPerSec) {
-        TokenBucket bucket = buckets.get(keyId);
-        // Self-heal: if the limits changed (PATCH), drop the stale bucket.
-        if (bucket != null && (bucket.capacity() != capacity || bucket.refillPerSec() != refillPerSec)) {
-            buckets.remove(keyId);
-            lastAccessNanos.remove(keyId);
-            bucket = null;
-        }
-        if (bucket == null) {
-            bucket = new TokenBucket(capacity, refillPerSec, clock);
-            buckets.put(keyId, bucket);
-        }
+        // compute() is atomic per key: only ONE thread can create or replace the bucket,
+        // so a burst of simultaneous first requests can never create several full buckets.
+        // If the limits changed (PATCH), the stale bucket is replaced by a new one.
+        TokenBucket bucket = buckets.compute(keyId, (id, existing) ->
+                (existing == null
+                        || existing.capacity() != capacity
+                        || existing.refillPerSec() != refillPerSec)
+                        ? new TokenBucket(capacity, refillPerSec, clock)
+                        : existing);
         lastAccessNanos.put(keyId, clock.getAsLong());
         return bucket.tryConsume();
     }
