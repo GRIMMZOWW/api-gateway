@@ -56,6 +56,7 @@ class GatewayControllerTest {
     @MockBean private Forwarder forwarder;
     @MockBean private GatewayProperties properties;
     @MockBean private com.example.gateway.auth.JwtService jwtService;
+    @MockBean private com.example.gateway.usage.UsageRecorder usageRecorder;
 
     private static final Instant NOW = Instant.parse("2026-06-01T00:00:00Z");
     private static final String KEY = "gk_ab12cd34ef56gh78ij90kl12mn34op56";
