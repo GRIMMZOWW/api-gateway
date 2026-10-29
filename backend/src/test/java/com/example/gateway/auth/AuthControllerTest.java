@@ -45,6 +45,11 @@ class AuthControllerTest {
     @MockBean
     private LoginThrottle loginThrottle;
 
+    // The @WebMvcTest slice scans @Component filters (JwtAuthFilter) but not the
+    // @Service JwtService it depends on; mock it so the slice context loads.
+    @MockBean
+    private JwtService jwtService;
+
     private final UserResponse sampleUser =
         new UserResponse(1L, "joe@example.com", "Joe", "USER", Instant.parse("2026-01-01T00:00:00Z"));
 
