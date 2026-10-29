@@ -69,5 +69,9 @@ public class TokenBucket {
         return capacity;
     }
 
+    public double refillPerSec() {
+        return refillPerSec;
+    }
+
     public record Decision(boolean allowed, int remaining, int retryAfterSeconds) {}
 }

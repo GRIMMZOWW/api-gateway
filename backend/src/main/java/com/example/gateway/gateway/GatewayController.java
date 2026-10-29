@@ -6,10 +6,11 @@ import com.example.gateway.common.ApiException;
 import com.example.gateway.common.ErrorBody;
 import com.example.gateway.common.ErrorResponse;
 import com.example.gateway.common.GatewayProperties;
-import com.example.gateway.keys.ApiKey;
-import com.example.gateway.keys.ApiKeyRepository;
-import com.example.gateway.keys.ApiKeyStatus;
+import com.example.gateway.keys.CachedKey;
 import com.example.gateway.keys.KeyHasher;
+import com.example.gateway.keys.KeyLookupService;
+import com.example.gateway.ratelimit.RateLimiterRegistry;
+import com.example.gateway.ratelimit.TokenBucket;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,13 +35,13 @@ import java.util.UUID;
 
 /**
  * The gateway endpoint {@code /gw/{slug}/**}. Implements the request flow from the spec:
- * generate a request id, resolve the slug, read and validate {@code X-API-Key}, check the
- * key belongs to the slug's API, check the API is enabled, (rate limit comes in Phase 5),
- * read the body (max 1 MB), forward, copy the upstream response back, and (usage logging
- * comes in Phase 6).
+ * request id; resolve slug; read and validate {@code X-API-Key} (cache-backed lookup);
+ * check the key belongs to the slug's API; check the API is enabled; per-key token-bucket
+ * rate limit with {@code X-RateLimit-*} headers and {@code Retry-After} on {@code 429};
+ * read the body (max 1 MB); forward; copy the upstream response back; (usage logging
+ * arrives in Phase 6).
  *
- * <p>Gateway errors are built here with the request's own id (not via GlobalExceptionHandler)
- * so the id is consistent across the response body and any usage log row.
+ * <p>Gateway errors are built here with the request's own id so it matches any usage row.
  */
 @RestController
 public class GatewayController {
@@ -52,18 +53,21 @@ public class GatewayController {
         "transfer-encoding", "upgrade");
 
     private final ApiRepository apiRepository;
-    private final ApiKeyRepository apiKeyRepository;
+    private final KeyLookupService keyLookupService;
     private final KeyHasher keyHasher;
+    private final RateLimiterRegistry rateLimiterRegistry;
     private final Forwarder forwarder;
     private final GatewayProperties properties;
     private final ObjectMapper objectMapper;
 
-    public GatewayController(ApiRepository apiRepository, ApiKeyRepository apiKeyRepository,
-                             KeyHasher keyHasher, Forwarder forwarder,
-                             GatewayProperties properties, ObjectMapper objectMapper) {
+    public GatewayController(ApiRepository apiRepository, KeyLookupService keyLookupService,
+                             KeyHasher keyHasher, RateLimiterRegistry rateLimiterRegistry,
+                             Forwarder forwarder, GatewayProperties properties,
+                             ObjectMapper objectMapper) {
         this.apiRepository = apiRepository;
-        this.apiKeyRepository = apiKeyRepository;
+        this.keyLookupService = keyLookupService;
         this.keyHasher = keyHasher;
+        this.rateLimiterRegistry = rateLimiterRegistry;
         this.forwarder = forwarder;
         this.properties = properties;
         this.objectMapper = objectMapper;
@@ -85,40 +89,48 @@ public class GatewayController {
         String key = request.getHeader("X-API-Key");
         if (key == null || key.isBlank()) {
             return error(requestId, apiId, 401, "MISSING_API_KEY",
-                "Missing X-API-Key header.", start, request);
+                "Missing X-API-Key header.", null);
         }
 
-        // Step 3: hash and look up the key (cache comes in Phase 5; for now, straight from MySQL).
+        // Step 3: hash and look up the key (Caffeine cache, then MySQL).
         String keyHash = keyHasher.hash(key);
-        Optional<ApiKey> keyOpt = apiKeyRepository.findByKeyHash(keyHash);
+        Optional<CachedKey> keyOpt = keyLookupService.find(keyHash);
         if (keyOpt.isEmpty()) {
-            return error(requestId, apiId, 401, "INVALID_API_KEY", "Invalid API key.", start, request);
+            return error(requestId, apiId, 401, "INVALID_API_KEY", "Invalid API key.", null);
         }
-        ApiKey apiKey = keyOpt.get();
-        if (apiKey.getStatus() == ApiKeyStatus.REVOKED) {
-            return error(requestId, apiId, 401, "INVALID_API_KEY", "Invalid API key.", start, request);
+        CachedKey cachedKey = keyOpt.get();
+        if (!cachedKey.active()) {
+            return error(requestId, apiId, 401, "INVALID_API_KEY", "Invalid API key.", null);
         }
-        if (apiKey.getExpiresAt() != null && apiKey.getExpiresAt().isBefore(Instant.now())) {
-            return error(requestId, apiId, 401, "INVALID_API_KEY", "Invalid API key.", start, request);
+        if (cachedKey.expiresAt() != null && cachedKey.expiresAt().isBefore(Instant.now())) {
+            return error(requestId, apiId, 401, "INVALID_API_KEY", "Invalid API key.", null);
         }
 
         // Step 4: the key must belong to this slug's API. Unknown slug -> 403, not logged.
         if (api == null) {
             return error(requestId, null, 403, "KEY_NOT_FOR_API",
-                "The API key is not valid for this API.", start, request);
+                "The API key is not valid for this API.", null);
         }
-        if (!apiKey.getApiId().equals(api.getId())) {
+        if (!cachedKey.apiId().equals(api.getId())) {
             return error(requestId, apiId, 403, "KEY_NOT_FOR_API",
-                "The API key is not valid for this API.", start, request);
+                "The API key is not valid for this API.", null);
         }
 
         // Step 5: API disabled.
         if (!api.isEnabled()) {
             return error(requestId, apiId, 503, "API_DISABLED",
-                "This API is currently disabled.", start, request);
+                "This API is currently disabled.", null);
         }
 
-        // Step 6: rate limiting (Phase 5 inserts the token-bucket check here).
+        // Step 6: per-key token bucket.
+        TokenBucket.Decision decision = rateLimiterRegistry.tryConsume(
+            cachedKey.keyId(), cachedKey.capacity(), cachedKey.refillPerSec().doubleValue());
+        RateLimitHeaders rl = new RateLimitHeaders(cachedKey.capacity(), decision.remaining(), 0);
+        if (!decision.allowed()) {
+            return error(requestId, apiId, 429, "RATE_LIMITED",
+                "Rate limit exceeded. Retry later.",
+                new RateLimitHeaders(cachedKey.capacity(), 0, decision.retryAfterSeconds()));
+        }
 
         // Step 7: read the request body, maximum maxBodyBytes.
         byte[] body;
@@ -126,10 +138,10 @@ public class GatewayController {
             body = readBody(request, properties.maxBodyBytes());
         } catch (BodyTooLargeException e) {
             return error(requestId, apiId, 413, "BODY_TOO_LARGE",
-                "Request body exceeds the maximum allowed size.", start, request);
+                "Request body exceeds the maximum allowed size.", rl);
         } catch (IOException e) {
             return error(requestId, apiId, 400, "BAD_REQUEST",
-                "Could not read the request body.", start, request);
+                "Could not read the request body.", rl);
         }
 
         // Step 7: forward to the upstream.
@@ -140,24 +152,16 @@ public class GatewayController {
             result = forwarder.forward(request.getMethod(), targetUrl, body,
                 forwardHeaders, api.getTimeoutMs());
         } catch (ApiException ex) {
-            // Forwarder maps connection/timeout failures to UPSTREAM_ERROR / UPSTREAM_TIMEOUT.
-            int status = ex.status().value();
-            return error(requestId, apiId, status, ex.code(), ex.getMessage(), start, request);
+            return error(requestId, apiId, ex.status().value(), ex.code(), ex.getMessage(), rl);
         }
 
-        // Step 8: copy upstream status, headers and body; add X-Request-Id.
-        // (Rate-limit headers are added in Phase 5.)
-        return successResponse(result, requestId);
+        // Step 8: copy upstream status, headers and body; add rate-limit + request-id headers.
+        return successResponse(result, requestId, rl);
     }
 
     private ResponseEntity<byte[]> error(String requestId, Long apiId, int status,
-                                         String code, String message, long start,
-                                         HttpServletRequest request) {
-        int latencyMs = (int) ((System.nanoTime() - start) / 1_000_000);
-        // Usage logging arrives in Phase 6; for now apiId/latency are computed but unused.
-        if (apiId == null || apiId < 0) {
-            // not logged (unknown slug)
-        }
+                                         String code, String message, RateLimitHeaders rl) {
+        // Usage logging arrives in Phase 6; apiId is computed here for that purpose.
         byte[] json;
         try {
             json = objectMapper.writeValueAsBytes(new ErrorResponse(ErrorBody.of(code, message, requestId)));
@@ -165,14 +169,22 @@ public class GatewayController {
             json = ("{\"error\":{\"code\":\"INTERNAL_ERROR\",\"requestId\":\"" + requestId + "\"}}")
                 .getBytes();
         }
-        return ResponseEntity.status(status)
+        ResponseEntity.BodyBuilder builder = ResponseEntity.status(status)
             .contentType(MediaType.APPLICATION_JSON)
             .header("X-Request-Id", requestId)
-            .header("X-Content-Type-Options", "nosniff")
-            .body(json);
+            .header("X-Content-Type-Options", "nosniff");
+        if (rl != null) {
+            builder.header("X-RateLimit-Limit", String.valueOf(rl.capacity()));
+            builder.header("X-RateLimit-Remaining", String.valueOf(rl.remaining()));
+            if (rl.retryAfterSeconds() > 0) {
+                builder.header("Retry-After", String.valueOf(rl.retryAfterSeconds()));
+            }
+        }
+        return builder.body(json);
     }
 
-    private ResponseEntity<byte[]> successResponse(ForwardResult result, String requestId) {
+    private ResponseEntity<byte[]> successResponse(ForwardResult result, String requestId,
+                                                   RateLimitHeaders rl) {
         HttpHeaders out = new HttpHeaders();
         if (result.headers() != null) {
             result.headers().forEach((name, values) -> {
@@ -183,6 +195,8 @@ public class GatewayController {
             });
         }
         out.add("X-Request-Id", requestId);
+        out.add("X-RateLimit-Limit", String.valueOf(rl.capacity()));
+        out.add("X-RateLimit-Remaining", String.valueOf(rl.remaining()));
         return ResponseEntity.status(result.statusCode()).headers(out).body(result.body());
     }
 
@@ -239,6 +253,9 @@ public class GatewayController {
         }
         return request.getRemoteAddr();
     }
+
+    /** Rate-limit headers to attach to a response, or {@code null} before the bucket step. */
+    record RateLimitHeaders(int capacity, int remaining, int retryAfterSeconds) {}
 
     /** Signals the request body exceeded {@code gateway.max-body-bytes}. */
     static final class BodyTooLargeException extends RuntimeException {}
