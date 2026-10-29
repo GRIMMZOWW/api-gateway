@@ -87,3 +87,74 @@ the layout in the spec.
 
 ## Open questions (none currently)
 None. New questions get appended here as they arise.
+
+---
+
+## Per-phase decisions (D1–D9)
+
+### D1 — `TokenBucket` created in Phase 1, not Phase 5
+The spec's build order puts `TokenBucket` in Phase 5, but the login throttle (Phase 1)
+needs it ("the same `TokenBucket` class also throttles login attempts"). So `TokenBucket`
+is created in Phase 1 (in `ratelimit/`) with its basic unit tests; Phase 5 adds
+`RateLimiterRegistry` + the 100-thread concurrency test. Functionally identical to the
+spec's end state.
+
+### D2 — `ApiKey` cache value (CachedKey) includes the API fields per spec
+`CachedKey` carries the key id, api id, active flag, expiry, capacity, refill rate, plus
+the spec's API fields (slug, upstream URL, timeout, enabled). The gateway resolves the
+request slug → `Api` separately (a unique-index lookup) so it can honour "unknown slug is
+not logged" (logging uses the request slug's api id, which is null when the slug is
+unknown). The `CachedKey` API fields are carried for spec fidelity; the gateway uses the
+fresh slug-resolved `Api` for the enabled/upstream/timeout decisions (never stale).
+
+### D3 — Unknown slug + valid key → 403 KEY_NOT_FOR_API, not logged
+When the request slug does not resolve to an API but the key is valid (for some other API),
+the gateway returns `403 KEY_NOT_FOR_API` and does **not** log (there is no request-slug
+api id). This satisfies "Only requests for an existing API are logged." Recorded because
+the spec's error table does not list an explicit "API not found" code.
+
+### D4 — Rate-limiter bucket eviction is self-healing, not hook-driven
+The spec says "when a key's limits are changed through PATCH, remove its bucket so the
+next request creates a new one." Instead of an eviction hook from `KeyService` into the
+registry, `RateLimiterRegistry.tryConsume` detects that the existing bucket's
+capacity/refill no longer match the requested limits and rebuilds it. Outcome is identical:
+the next request after a PATCH uses the new limits. This keeps `KeyService` decoupled from
+the rate limiter (no new interface). A revoke does not need bucket eviction because a
+revoked key fails at the key-validity step before the bucket is consulted.
+
+### D5 — `X-RateLimit-*` headers on every post-bucket response
+`X-RateLimit-Limit` / `X-RateLimit-Remaining` are added on success, 413, 502, 504 (the
+bucket was consulted and a token consumed) and on 429 (with `Retry-After`). Pre-bucket
+errors (401/403/503) get only `X-Request-Id`. This matches the spec's core logic #2
+("Response headers: X-RateLimit-Limit = capacity, X-RateLimit-Remaining = remaining. On
+429 add Retry-After.").
+
+### D6 — Async usage writer built directly (no intermediate synchronous version)
+The spec's "Minimum version" table mentions a plain DB-save first version replaced by the
+async batch writer later. To avoid churn, Phase 6 builds the async `AsyncUsageRecorder`
+directly (bounded queue, background thread, `JdbcTemplate.batchUpdate`,
+`last_used_at` update, shutdown flush, dropped counter). The synchronous intermediate is
+not committed. The flush loop uses `queue.poll(flushInterval)` + `drainTo(batchSize)` so it
+drains as soon as a batch is ready OR every 1s — approximating the spec's "every 1 second
+or when 100 events are waiting, whichever comes first."
+
+### D7 — Analytics use `JdbcTemplate` with parameterized SQL (no entity)
+`usage_logs` is written by the async recorder via `JdbcTemplate.batchUpdate` and read by
+`AnalyticsService` via parameterized `JdbcTemplate` queries (spec: "JdbcTemplate for batch
+usage inserts"). No JPA entity for `usage_logs` is needed; the Flyway schema owns it. Time
+series gap-filling is done in Java (full hourly/daily bucket sequence with zeros for gaps).
+
+### D8 — Tests use `@WebMvcTest` + `@MockBean`, never `@SpringBootTest` with a DB
+Per the user's environment (no Docker, no Testcontainers), every controller test is a
+`@WebMvcTest` slice with `@AutoConfigureMockMvc(addFilters = false)` and mocked services;
+service/logic tests are pure JUnit + Mockito. No test loads a real datasource. The
+`JwtAuthFilter` (a `@Component` `OncePerRequestFilter`) is scanned by the slice, so each
+controller test `@MockBean`s `JwtService` to satisfy the filter's constructor (it never
+runs because filters are off).
+
+### D9 — Load test is stdlib Python
+`loadtest/loadtest.py` uses only `urllib`, `json`, `threading`, `statistics` so it runs on
+any Python 3 with no `pip install`. It registers a user, creates an API + key, warms the
+cache, measures direct upstream p95, hammers `/gw/{slug}` at the target rate, and prints
+the 200/429 share, gateway p95 overhead, and dropped-events count. Numbers are filled into
+the README after the user runs it.
