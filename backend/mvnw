@@ -1,0 +1,23 @@
+#!/bin/sh
+# Simplified Maven Wrapper for Unix. Downloads Apache Maven 3.9.9 to a local cache.
+set -e
+
+MAVEN_VERSION=3.9.9
+MAVEN_URL="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.zip"
+CACHE_DIR="$HOME/.m2/w/apache-maven-$MAVEN_VERSION"
+MAVEN_HOME="$CACHE_DIR/apache-maven-$MAVEN_VERSION"
+MAVEN_CMD="$MAVEN_HOME/bin/mvn"
+
+if [ ! -x "$MAVEN_CMD" ]; then
+  echo "[mvnw] Downloading Apache Maven $MAVEN_VERSION to $CACHE_DIR"
+  mkdir -p "$CACHE_DIR"
+  curl -fsSL "$MAVEN_URL" -o "$CACHE_DIR/maven.zip"
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "$CACHE_DIR/maven.zip" -d "$CACHE_DIR"
+  else
+    python3 -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$CACHE_DIR/maven.zip" "$CACHE_DIR"
+  fi
+  rm -f "$CACHE_DIR/maven.zip"
+fi
+
+exec "$MAVEN_CMD" "$@"

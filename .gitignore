@@ -1,0 +1,23 @@
+# Maven
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.log
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# Frontend (Phase 8)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: api-gateway
+  datasource:
+    # No defaults: the app fails fast if DB_URL/DB_USERNAME/DB_PASSWORD are not set.
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Custom settings. Bound to @ConfigurationProperties in later phases.
+jwt:
+  secret: ${JWT_SECRET:}
+  ttl-minutes: 60
+
+cors:
+  allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+
+gateway:
+  max-body-bytes: 1048576
+  default-timeout-ms: 10000
+  cache-ttl-seconds: 60
+  cache-max-entries: 10000
+  usage-queue-capacity: 10000
+  usage-flush-interval-ms: 1000
+  usage-batch-size: 100
+  allow-private-upstreams: ${GATEWAY_ALLOW_PRIVATE_UPSTREAMS:false}
