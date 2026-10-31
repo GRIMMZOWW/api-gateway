@@ -5,15 +5,15 @@ import type { CSSProperties } from "react";
  * color is never the sole signal (spec UX rule).
  */
 const OUTCOMES: Record<string, { label: string; cls: string; dot: string }> = {
-  SUCCESS: { label: "Success", cls: "outcome--success", dot: "#16a34a" },
-  RATE_LIMITED: { label: "Rate limited", cls: "outcome--warning", dot: "#d97706" },
-  UNAUTHORIZED: { label: "Unauthorized", cls: "outcome--danger", dot: "#dc2626" },
-  UPSTREAM_ERROR: { label: "Upstream error", cls: "outcome--danger", dot: "#dc2626" },
-  UPSTREAM_TIMEOUT: { label: "Upstream timeout", cls: "outcome--danger", dot: "#dc2626" },
-  REJECTED: { label: "Rejected", cls: "outcome--muted", dot: "#64748b" },
+  SUCCESS: { label: "Success", cls: "outcome--success", dot: "#2b7a4b" },
+  RATE_LIMITED: { label: "Rate limited", cls: "outcome--warning", dot: "#d9a13b" },
+  UNAUTHORIZED: { label: "Unauthorized", cls: "outcome--danger", dot: "#b0352a" },
+  UPSTREAM_ERROR: { label: "Upstream error", cls: "outcome--danger", dot: "#b0352a" },
+  UPSTREAM_TIMEOUT: { label: "Upstream timeout", cls: "outcome--danger", dot: "#b0352a" },
+  REJECTED: { label: "Rejected", cls: "outcome--muted", dot: "#5b656d" },
 };
 
-const FALLBACK = { label: "Unknown", cls: "outcome--muted", dot: "#64748b" };
+const FALLBACK = { label: "Unknown", cls: "outcome--muted", dot: "#5b656d" };
 
 export function OutcomeLabel({ outcome }: { outcome: string }) {
   const info = OUTCOMES[outcome] ?? FALLBACK;

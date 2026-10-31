@@ -9,7 +9,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { formatNumber } from "../utils/format";
 
-/** 24h request count for a single API row. Fetches its own summary. */
+/** One row in the list. Fetches its own 24-hour request count. */
 function ApiRow({ api }: { api: ApiResource }) {
   const { data, loading, error } = useAsync(async () => {
     const to = Date.now();
@@ -22,28 +22,21 @@ function ApiRow({ api }: { api: ApiResource }) {
   }, [api.id]);
 
   return (
-    <Link to={`/apis/${api.id}`} className="api-card">
-      <div className="api-card__top">
-        <span className="api-card__name">{api.name}</span>
-        <span
-          className={`status-pill status-pill--${api.enabled ? "active" : "inactive"}`}
-        >
-          {api.enabled ? "Enabled" : "Disabled"}
-        </span>
+    <Link to={`/apis/${api.id}`} className="api-row">
+      <div>
+        <div className="api-row__name">{api.name}</div>
+        <div className="api-row__where">
+          /gw/{api.slug} forwards to {api.upstreamBaseUrl}
+        </div>
       </div>
-      <div className="api-card__slug mono">/gw/{api.slug}</div>
-      <div className="api-card__upstream mono">{api.upstreamBaseUrl}</div>
-      <div className="api-card__stat">
-        <span className="api-card__stat-label">24h requests</span>
-        <span className="api-card__stat-value">
-          {loading ? (
-            <span className="api-card__stat-loading">…</span>
-          ) : error ? (
-            <span className="api-card__stat-error">—</span>
-          ) : (
-            formatNumber(data?.totalRequests ?? 0)
-          )}
-        </span>
+      <span
+        className={`status-pill status-pill--${api.enabled ? "active" : "inactive"}`}
+      >
+        {api.enabled ? "On" : "Off"}
+      </span>
+      <div className="api-row__count">
+        <strong>{loading ? "…" : error ? "–" : formatNumber(data?.totalRequests ?? 0)}</strong>
+        <span>last 24 hours</span>
       </div>
     </Link>
   );
@@ -119,14 +112,14 @@ export function ApisPage() {
       <div className="page__header">
         <div>
           <h1 className="page__title">APIs</h1>
-          <p className="page__subtitle">Proxied upstreams you manage</p>
+          <p className="page__subtitle">Each API gets an address on this gateway, like /gw/my-api, and forwards to a server you choose.</p>
         </div>
         <button
           type="button"
           className="btn btn--primary"
           onClick={() => setShowForm(true)}
         >
-          + New API
+          Add an API
         </button>
       </div>
 
@@ -145,15 +138,15 @@ export function ApisPage() {
       {!loading && !error && apis && apis.length === 0 && (
         <div className="panel">
           <EmptyState
-            title="No APIs yet"
-            description="Create your first API to start proxying requests through the gateway."
+            title="Nothing here yet"
+            description="Add the server you want to protect. You will get a gateway address and can then create keys for it."
             action={
               <button
                 type="button"
                 className="btn btn--primary"
                 onClick={() => setShowForm(true)}
               >
-                + New API
+                Add an API
               </button>
             }
           />
@@ -161,7 +154,7 @@ export function ApisPage() {
       )}
 
       {!loading && !error && apis && apis.length > 0 && (
-        <div className="api-grid">
+        <div className="api-list">
           {apis.map((api) => (
             <ApiRow key={api.id} api={api} />
           ))}
@@ -181,7 +174,7 @@ export function ApisPage() {
           <div className="modal">
             <div className="modal__header">
               <h2 id="new-api-title" className="modal__title">
-                New API
+                Add an API
               </h2>
               <button
                 type="button"
@@ -205,7 +198,7 @@ export function ApisPage() {
                   type="text"
                   value={form.name}
                   onChange={(e) => update("name", e.target.value)}
-                  placeholder="My upstream"
+                  placeholder="Weather service"
                   autoFocus
                   required
                   maxLength={120}
@@ -221,20 +214,20 @@ export function ApisPage() {
                   type="text"
                   value={form.slug}
                   onChange={(e) => update("slug", e.target.value)}
-                  placeholder="my-api"
+                  placeholder="weather"
                   required
                   pattern="[a-z0-9-]+"
                   maxLength={64}
                 />
                 <span className="field__hint">
-                  Used in <code className="mono">/gw/{form.slug || "slug"}</code>
+                  Lowercase letters, numbers and dashes. Requests go to <code className="mono">/gw/{form.slug || "slug"}</code>
                 </span>
                 {fieldError("slug") && (
                   <span className="field__error">{fieldError("slug")}</span>
                 )}
               </label>
               <label className="field">
-                <span className="field__label">Upstream base URL</span>
+                <span className="field__label">Forward requests to</span>
                 <input
                   className="input input--mono"
                   type="url"
@@ -248,7 +241,7 @@ export function ApisPage() {
                 )}
               </label>
               <label className="field">
-                <span className="field__label">Timeout (ms)</span>
+                <span className="field__label">Give up after (ms)</span>
                 <input
                   className="input"
                   type="number"
@@ -272,7 +265,7 @@ export function ApisPage() {
                   Cancel
                 </button>
                 <button type="submit" className="btn btn--primary" disabled={submitting}>
-                  {submitting ? <Spinner label="Creating…" /> : "Create API"}
+                  {submitting ? <Spinner label="Adding" /> : "Add API"}
                 </button>
               </div>
             </form>

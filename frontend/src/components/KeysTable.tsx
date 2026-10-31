@@ -9,7 +9,7 @@ interface KeysTableProps {
   onRevoke: (key: ApiKey) => void;
 }
 
-/** Keys table on the Keys tab. Shows limits, status, last used, and requests. */
+/** Keys table: limits, status, last use and request count. */
 export function KeysTable({ keys, usageBy, onEdit, onRevoke }: KeysTableProps) {
   return (
     <div className="table-wrap">
@@ -17,9 +17,9 @@ export function KeysTable({ keys, usageBy, onEdit, onRevoke }: KeysTableProps) {
         <thead>
           <tr>
             <th>Name</th>
-            <th>Prefix</th>
-            <th className="num">Capacity</th>
-            <th className="num">Refill/s</th>
+            <th>Starts with</th>
+            <th className="num">Burst</th>
+            <th className="num">Per second</th>
             <th>Status</th>
             <th>Expires</th>
             <th>Last used</th>
@@ -45,8 +45,8 @@ export function KeysTable({ keys, usageBy, onEdit, onRevoke }: KeysTableProps) {
                     {k.status === "ACTIVE" ? "Active" : "Revoked"}
                   </span>
                 </td>
-                <td>{formatDateTime(k.expiresAt)}</td>
-                <td>{formatDateTime(k.lastUsedAt)}</td>
+                <td>{k.expiresAt ? formatDateTime(k.expiresAt) : "Never"}</td>
+                <td>{k.lastUsedAt ? formatDateTime(k.lastUsedAt) : "Not used"}</td>
                 <td className="num">{usage ? formatNumber(usage.total) : "—"}</td>
                 <td className="row-actions">
                   <button

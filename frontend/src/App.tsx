@@ -1,4 +1,4 @@
-import { Navigate, Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Outlet, createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
 import { RequireAuth } from "./components/RequireAuth";
 import { Layout } from "./components/Layout";
@@ -6,6 +6,10 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { ApisPage } from "./pages/ApisPage";
 import { ApiDetailPage } from "./pages/ApiDetailPage";
+import { LandingPage } from "./pages/LandingPage";
+import { DocsPage } from "./pages/DocsPage";
+import { OverviewPage } from "./pages/OverviewPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 /**
  * Router (library mode). Plain components with useEffect/useState — no
@@ -16,7 +20,18 @@ const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
   {
-    path: "/",
+    element: (
+      <Layout>
+        <Outlet />
+      </Layout>
+    ),
+    children: [
+      { path: "/", element: <LandingPage /> },
+      { path: "/docs", element: <DocsPage /> },
+      { path: "*", element: <NotFoundPage /> },
+    ],
+  },
+  {
     element: (
       <RequireAuth>
         <Layout>
@@ -25,10 +40,9 @@ const router = createBrowserRouter([
       </RequireAuth>
     ),
     children: [
-      { index: true, element: <Navigate to="/apis" replace /> },
-      { path: "apis", element: <ApisPage /> },
-      { path: "apis/:id", element: <ApiDetailPage /> },
-      { path: "*", element: <Navigate to="/apis" replace /> },
+      { path: "/overview", element: <OverviewPage /> },
+      { path: "/apis", element: <ApisPage /> },
+      { path: "/apis/:id", element: <ApiDetailPage /> },
     ],
   },
 ]);

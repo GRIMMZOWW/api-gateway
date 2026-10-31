@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Spinner } from "./Spinner";
 
 interface ConfirmDialogProps {
@@ -25,11 +25,6 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const [, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   useEffect(() => {
     if (!open) return;
     const onEsc = (e: KeyboardEvent) => {
@@ -78,7 +73,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={busy}
           >
-            {busy ? <Spinner label="Working…" /> : confirmLabel}
+            {busy ? <Spinner label="Working" /> : confirmLabel}
           </button>
         </div>
       </div>

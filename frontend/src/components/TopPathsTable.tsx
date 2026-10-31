@@ -10,7 +10,7 @@ export function TopPathsTable({ paths }: TopPathsTableProps) {
   return (
     <div className="panel">
       <div className="panel__header">
-        <h3 className="panel__title">Top paths</h3>
+        <h3 className="panel__title">Busiest paths</h3>
       </div>
       <div className="table-wrap">
         <table className="table">
@@ -19,7 +19,7 @@ export function TopPathsTable({ paths }: TopPathsTableProps) {
               <th>Method</th>
               <th>Path</th>
               <th className="num">Requests</th>
-              <th className="num">Avg latency</th>
+              <th className="num">Average time</th>
             </tr>
           </thead>
           <tbody>

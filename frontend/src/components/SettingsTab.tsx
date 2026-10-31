@@ -107,7 +107,7 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
     }
   }
 
-  const curl = `curl -H "X-API-Key: <YOUR_KEY>" \\\n  ${API_BASE_URL}/gw/${api.slug}/your/path`;
+  const curl = `curl -H "X-API-Key: YOUR_KEY" \\\n  ${API_BASE_URL}/gw/${api.slug}/your/path`;
 
   async function copyCurl() {
     try {
@@ -123,7 +123,7 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
     <div className="settings-tab">
       <div className="panel">
         <div className="panel__header">
-          <h3 className="panel__title">General</h3>
+          <h3 className="panel__title">Details</h3>
         </div>
         <form className="form" onSubmit={save} noValidate>
           {saveError instanceof ApiError && !saveError.fields && (
@@ -146,7 +146,7 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
             )}
           </label>
           <label className="field">
-            <span className="field__label">Upstream base URL</span>
+            <span className="field__label">Forward requests to</span>
             <input
               className="input input--mono"
               type="url"
@@ -160,7 +160,7 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
             )}
           </label>
           <label className="field">
-            <span className="field__label">Timeout (ms)</span>
+            <span className="field__label">Give up after (ms)</span>
             <input
               className="input"
               type="number"
@@ -180,7 +180,7 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
               className="btn btn--primary"
               disabled={saving || !dirty}
             >
-              {saving ? <Spinner label="Saving…" /> : "Save changes"}
+              {saving ? <Spinner label="Saving" /> : "Save changes"}
             </button>
             {saved && <span className="form__ok">Saved</span>}
           </div>
@@ -189,14 +189,14 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
 
       <div className="panel">
         <div className="panel__header">
-          <h3 className="panel__title">Status</h3>
+          <h3 className="panel__title">Turn on or off</h3>
         </div>
         <div className="toggle-row">
           <div>
-            <div className="toggle-row__label">API enabled</div>
+            <div className="toggle-row__label">Accept requests</div>
             <div className="toggle-row__hint">
-              When disabled, every gateway request to{" "}
-              <code className="mono">/gw/{api.slug}</code> returns 404.
+              While this is off, anything sent to{" "}
+              <code className="mono">/gw/{api.slug}</code> gets a 503.
             </div>
           </div>
           <button
@@ -215,32 +215,30 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
 
       <div className="panel">
         <div className="panel__header">
-          <h3 className="panel__title">Try it</h3>
+          <h3 className="panel__title">Try a request</h3>
         </div>
         <p className="muted">
-          Send a request through the gateway with an active key:
+          Swap in one of your keys and run this in a terminal:
         </p>
         <pre className="code-block">{curl}</pre>
         <div className="form__actions">
           <button type="button" className="btn btn--ghost" onClick={copyCurl}>
-            {curlCopied ? "Copied!" : "Copy curl"}
+            {curlCopied ? "Copied" : "Copy command"}
           </button>
         </div>
       </div>
 
       <div className="panel panel--danger">
         <div className="panel__header">
-          <h3 className="panel__title panel__title--danger">Danger zone</h3>
+          <h3 className="panel__title panel__title--danger">Delete this API</h3>
         </div>
         <p className="muted">
-          Deleting an API permanently removes it, its keys, and its usage logs.
-          This cannot be undone.
+          This removes the API, all of its keys and its request history for good.
         </p>
         <div className="confirm-delete">
           <label className="field">
             <span className="field__label">
-              Type the API name{" "}
-              <code className="mono">{api.name}</code> to confirm
+              To confirm, type <code className="mono">{api.name}</code>
             </span>
             <input
               className="input"
@@ -256,7 +254,7 @@ export function SettingsTab({ api, onUpdated }: SettingsTabProps) {
             onClick={remove}
             disabled={deleting || confirmName !== api.name}
           >
-            {deleting ? <Spinner label="Deleting…" /> : "Delete API"}
+            {deleting ? <Spinner label="Deleting" /> : "Delete API"}
           </button>
         </div>
         {deleteError instanceof ApiError && (

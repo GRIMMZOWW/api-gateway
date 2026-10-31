@@ -36,5 +36,5 @@ export const keysApi = {
     api.post<CreateKeyResponse>(`/api/apis/${apiId}/keys`, payload),
   update: (keyId: number | string, payload: UpdateKeyPayload) =>
     api.patch<ApiKey>(`/api/keys/${keyId}`, payload),
-  revoke: (keyId: number | string) => api.del<void>(`/api/keys/${keyId}/revoke`),
+  revoke: (keyId: number | string) => api.post<void>(`/api/keys/${keyId}/revoke`),
 };

@@ -14,7 +14,7 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     return (
       <div className="splash" role="status" aria-live="polite">
         <span className="spinner__ring spinner__ring--lg" aria-hidden="true" />
-        <p>Loading dashboard…</p>
+        <p>Loading…</p>
       </div>
     );
   }

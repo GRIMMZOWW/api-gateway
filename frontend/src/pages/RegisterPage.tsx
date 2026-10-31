@@ -4,6 +4,7 @@ import { ApiError } from "../api/client";
 import { authApi } from "../api/auth";
 import { useAuth } from "../auth/AuthContext";
 import { Spinner } from "../components/Spinner";
+import { AuthAside } from "../components/AuthAside";
 
 export function RegisterPage() {
   const { login, token, ready } = useAuth();
@@ -15,7 +16,7 @@ export function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);
 
-  if (ready && token) return <Navigate to="/apis" replace />;
+  if (ready && token) return <Navigate to="/overview" replace />;
 
   function fieldError(name: string): string | undefined {
     if (error instanceof ApiError && error.fields) return error.fields[name];
@@ -35,7 +36,7 @@ export function RegisterPage() {
         displayName: displayName.trim(),
       });
       await login(res.token);
-      navigate("/apis", { replace: true });
+      navigate("/overview", { replace: true });
     } catch (err) {
       setError(err);
     } finally {
@@ -45,9 +46,11 @@ export function RegisterPage() {
 
   return (
     <div className="auth-page">
+      <AuthAside />
+      <div className="auth-main">
       <form className="auth-card" onSubmit={submit} noValidate>
-        <h1 className="auth-card__title">Create your account</h1>
-        <p className="auth-card__subtitle">Start proxying requests in minutes</p>
+        <h1 className="auth-card__title">Create an account</h1>
+        <p className="auth-card__subtitle">Takes a few seconds. Passwords need at least 8 characters.</p>
 
         {banner && (
           <div className="banner banner--danger" role="alert">
@@ -56,7 +59,7 @@ export function RegisterPage() {
         )}
 
         <label className="field">
-          <span className="field__label">Display name</span>
+          <span className="field__label">Your name</span>
           <input
             className="input"
             type="text"
@@ -104,13 +107,14 @@ export function RegisterPage() {
         </label>
 
         <button type="submit" className="btn btn--primary btn--block" disabled={submitting}>
-          {submitting ? <Spinner label="Creating account…" /> : "Create account"}
+          {submitting ? <Spinner label="Creating account" /> : "Create account"}
         </button>
 
         <p className="auth-card__switch">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already registered? <Link to="/login">Sign in</Link>
         </p>
       </form>
+      </div>
     </div>
   );
 }

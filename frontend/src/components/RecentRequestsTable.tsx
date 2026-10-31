@@ -7,7 +7,13 @@ interface RecentRequestsTableProps {
   keyNameBy: Record<number, string | undefined>;
 }
 
-/** The 50 newest requests table on the Requests tab. */
+function statusClass(code: number): string {
+  if (code >= 200 && code < 400) return "status-ok";
+  if (code === 429) return "status-limit";
+  return code ? "status-bad" : "";
+}
+
+/** The 50 newest requests, newest first. */
 export function RecentRequestsTable({ requests, keyNameBy }: RecentRequestsTableProps) {
   return (
     <div className="table-wrap">
@@ -31,14 +37,14 @@ export function RecentRequestsTable({ requests, keyNameBy }: RecentRequestsTable
                 <span className="method method--sm">{r.method}</span>
               </td>
               <td className="mono">{r.path}</td>
-              <td className="num">{r.statusCode || "—"}</td>
+              <td className={`num ${statusClass(r.statusCode)}`}>{r.statusCode || "none"}</td>
               <td>
                 <OutcomeLabel outcome={r.outcome} />
               </td>
               <td className="num">{formatMs(r.latencyMs)}</td>
               <td>
                 {r.keyId == null ? (
-                  <span className="muted">—</span>
+                  <span className="muted">none</span>
                 ) : (
                   keyNameBy[r.keyId] ?? <span className="muted">#{r.keyId}</span>
                 )}

@@ -24,9 +24,9 @@ interface ChartRow {
 }
 
 const SERIES = [
-  { key: "Success", color: "#16a34a" },
-  { key: "Rate limited", color: "#d97706" },
-  { key: "Errors", color: "#dc2626" },
+  { key: "Success", color: "#2b7a4b" },
+  { key: "Rate limited", color: "#d9a13b" },
+  { key: "Errors", color: "#b0352a" },
 ] as const;
 
 /**
@@ -45,7 +45,7 @@ export function RequestsChart({ points, bucket }: RequestsChartProps) {
   return (
     <div className="chart">
       <div className="chart__header">
-        <h3 className="chart__title">Requests over time</h3>
+        <h3 className="chart__title">Requests, {bucket === "day" ? "per day" : "per hour"}</h3>
         <div className="chart__legend-static" aria-hidden="false">
           {SERIES.map((s) => (
             <span className="chart__legend-item" key={s.key}>
@@ -62,28 +62,28 @@ export function RequestsChart({ points, bucket }: RequestsChartProps) {
       <div className="chart__body">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={rows} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--line-soft)" vertical={false} />
             <XAxis
               dataKey="label"
               tick={{ fill: "var(--muted)", fontSize: 11 }}
               tickLine={false}
-              axisLine={{ stroke: "var(--border)" }}
+              axisLine={{ stroke: "var(--line)" }}
               minTickGap={16}
             />
             <YAxis
               allowDecimals={false}
               tick={{ fill: "var(--muted)", fontSize: 11 }}
               tickLine={false}
-              axisLine={{ stroke: "var(--border)" }}
+              axisLine={{ stroke: "var(--line)" }}
               width={40}
             />
             <Tooltip
-              cursor={{ fill: "var(--accent-soft)" }}
+              cursor={{ fill: "#1a202510" }}
               contentStyle={{
-                background: "var(--surface-2)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-                color: "var(--fg)",
+                background: "var(--surface)",
+                border: "1px solid var(--line)",
+                borderRadius: 4,
+                color: "var(--ink)",
                 fontSize: 12,
               }}
             />
@@ -94,7 +94,7 @@ export function RequestsChart({ points, bucket }: RequestsChartProps) {
                 dataKey={s.key}
                 stackId="requests"
                 fill={s.color}
-                radius={s.key === "Success" ? [0, 0, 0, 0] : [3, 3, 0, 0]}
+                radius={0}
               />
             ))}
           </BarChart>

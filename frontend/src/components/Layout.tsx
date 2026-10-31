@@ -1,55 +1,61 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
+import { Footer } from "./Footer";
+import { Logo } from "./Logo";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
-/** App shell: top nav with the APIs link, user menu, and logout. */
+const linkClass = ({ isActive }: { isActive: boolean }) =>
+  `topbar__link${isActive ? " is-active" : ""}`;
+
+/** Shell for every page. The top bar changes depending on whether someone is signed in. */
 export function Layout({ children }: LayoutProps) {
-  const { user, logout } = useAuth();
+  const { token, user, logout } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
     logout();
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   }
 
   return (
     <div className="app">
+      <a className="skip" href="#main">Skip to content</a>
       <header className="topbar">
         <div className="topbar__inner">
-          <NavLink to="/apis" className="topbar__brand">
-            <span className="topbar__mark" aria-hidden="true">◆</span>
-            API Gateway
-          </NavLink>
-          <nav className="topbar__nav">
-            <NavLink
-              to="/apis"
-              className={({ isActive }) =>
-                `topbar__link${isActive ? " is-active" : ""}`
-              }
-            >
-              APIs
-            </NavLink>
+          <Link to={token ? "/overview" : "/"} className="topbar__brand" aria-label="Gatecraft home">
+            <Logo />
+          </Link>
+          <nav className="topbar__nav" aria-label="Main">
+            {token && <NavLink to="/overview" className={linkClass}>Overview</NavLink>}
+            {token && <NavLink to="/apis" className={linkClass}>APIs</NavLink>}
+            <NavLink to="/docs" className={linkClass}>Docs</NavLink>
           </nav>
           <div className="topbar__user">
-            {user && (
-              <span className="topbar__user-name" title={user.email}>
-                {user.displayName}
-              </span>
+            {token ? (
+              <>
+                {user && (
+                  <span className="topbar__user-name" title={user.email}>
+                    {user.displayName}
+                  </span>
+                )}
+                <button type="button" className="btn btn--ghost" onClick={handleLogout}>
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="topbar__link">Sign in</Link>
+                <Link to="/register" className="btn btn--light topbar__cta">Create account</Link>
+              </>
             )}
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={handleLogout}
-            >
-              Log out
-            </button>
           </div>
         </div>
       </header>
-      <main className="content">{children}</main>
+      <main id="main" className="content">{children}</main>
+      <Footer />
     </div>
   );
 }

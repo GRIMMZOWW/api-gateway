@@ -119,7 +119,7 @@ export function EditKeyModal({ keyData, onClose, onUpdated }: EditKeyModalProps)
           </label>
           <div className="field-row">
             <label className="field">
-              <span className="field__label">Capacity (tokens)</span>
+              <span className="field__label">Burst size</span>
               <input
                 className="input"
                 type="number"
@@ -132,7 +132,7 @@ export function EditKeyModal({ keyData, onClose, onUpdated }: EditKeyModalProps)
               )}
             </label>
             <label className="field">
-              <span className="field__label">Refill / second</span>
+              <span className="field__label">Requests per second</span>
               <input
                 className="input"
                 type="number"
@@ -156,7 +156,7 @@ export function EditKeyModal({ keyData, onClose, onUpdated }: EditKeyModalProps)
               Cancel
             </button>
             <button type="submit" className="btn btn--primary" disabled={submitting}>
-              {submitting ? <Spinner label="Saving…" /> : "Save changes"}
+              {submitting ? <Spinner label="Saving" /> : "Save changes"}
             </button>
           </div>
         </form>

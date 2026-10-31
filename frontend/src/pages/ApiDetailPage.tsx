@@ -45,9 +45,7 @@ export function ApiDetailPage() {
   if (loading) {
     return (
       <div className="page">
-        <div className="detail-head">
-          <Spinner block label="Loading API…" />
-        </div>
+        <Spinner block label="Loading" />
       </div>
     );
   }
@@ -74,7 +72,7 @@ export function ApiDetailPage() {
             <span
               className={`status-pill status-pill--${api.enabled ? "active" : "inactive"}`}
             >
-              {api.enabled ? "Enabled" : "Disabled"}
+              {api.enabled ? "On" : "Off"}
             </span>
           </div>
         </div>
@@ -145,15 +143,7 @@ function OverviewTab({ api }: { api: ApiResource }) {
 
       {loading && (
         <>
-          <div className="summary-cards">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div className="summary-card summary-card--skeleton" key={i}>
-                <div className="skeleton-line" />
-                <div className="skeleton-line skeleton-line--lg" />
-                <div className="skeleton-line skeleton-line--sm" />
-              </div>
-            ))}
-          </div>
+          <div className="skeleton-block" />
           <div className="chart chart--skeleton" />
         </>
       )}
@@ -174,7 +164,7 @@ function OverviewTab({ api }: { api: ApiResource }) {
             <div className="panel">
               <EmptyState
                 title="No requests yet"
-                description="Send a request through this API's gateway URL to see top paths here."
+                description="Send a request to this API's gateway address and the busiest paths will show up here."
               />
             </div>
           )}
@@ -229,13 +219,13 @@ function KeysTab({ api }: { api: ApiResource }) {
   return (
     <div className="tab-pane">
       <div className="tab-pane__bar">
-        <h2 className="tab-pane__heading">API keys</h2>
+        <h2 className="tab-pane__heading">Keys</h2>
         <button
           type="button"
           className="btn btn--primary btn--sm"
           onClick={() => setCreateOpen(true)}
         >
-          + Create key
+          New key
         </button>
       </div>
 
@@ -254,15 +244,15 @@ function KeysTab({ api }: { api: ApiResource }) {
       {!loading && !error && data && data.keys.length === 0 && (
         <div className="panel">
           <EmptyState
-            title="No keys yet"
-            description="Create your first key to authenticate requests through this API."
+            title="No keys"
+            description="Callers need a key to use this API. Make one, copy it, and send it in the X-API-Key header."
             action={
               <button
                 type="button"
                 className="btn btn--primary"
                 onClick={() => setCreateOpen(true)}
               >
-                + Create key
+                New key
               </button>
             }
           />
@@ -297,7 +287,7 @@ function KeysTab({ api }: { api: ApiResource }) {
       />
       <ConfirmDialog
         open={revoking !== null}
-        title="Revoke key"
+        title="Revoke this key?"
         tone="danger"
         confirmLabel="Revoke"
         busy={revokingBusy}
@@ -306,13 +296,12 @@ function KeysTab({ api }: { api: ApiResource }) {
         message={
           <>
             <p>
-              Revoke{" "}
               <strong>{revoking?.name}</strong>{" "}
-              (<code className="mono">{revoking?.prefix}…</code>)?
+              (<code className="mono">{revoking?.prefix}…</code>)
             </p>
             <p className="muted">
-              Revocation is permanent. Existing requests using this key will be
-              rejected immediately. You will need to create a new key.
+              The next request that uses it will get a 401. You can't undo this.
+              Make a new key if the caller still needs access.
             </p>
             {revokeError instanceof ApiError && (
               <div className="banner banner--danger" role="alert">
@@ -350,9 +339,9 @@ function RequestsTab({ api }: { api: ApiResource }) {
   return (
     <div className="tab-pane">
       <div className="tab-pane__bar">
-        <h2 className="tab-pane__heading">Recent requests</h2>
+        <h2 className="tab-pane__heading">Latest 50 requests</h2>
         <button type="button" className="btn btn--ghost btn--sm" onClick={reload}>
-          ↻ Refresh
+          Refresh
         </button>
       </div>
 
@@ -372,13 +361,13 @@ function RequestsTab({ api }: { api: ApiResource }) {
         <div className="panel">
           <EmptyState
             title="No requests yet"
-            description="Send a request through this API's gateway URL and it will appear here."
+            description="Send a request to this API's gateway address and it will show up here."
           />
         </div>
       )}
 
       {!loading && !error && data && data.recent.length > 0 && (
-        <div className="panel panel--flush">
+        <div className="panel panel--flush log">
           <RecentRequestsTable
             requests={data.recent}
             keyNameBy={data.keyNameBy}

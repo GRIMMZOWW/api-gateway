@@ -5,61 +5,50 @@ interface SummaryCardsProps {
   summary: AnalyticsSummary;
 }
 
-interface Card {
-  label: string;
-  value: string;
-  tone: "neutral" | "success" | "warning" | "danger";
-  hint: string;
-}
-
 /**
- * The five summary cards on the Overview tab: total requests, success rate,
- * rate-limited, errors, average latency. Each card has a tone color AND a
- * text label so color is never the sole signal.
+ * Overview header: one plain sentence, then the same numbers in a row.
+ * Every figure has a text label, so colour is never the only signal.
  */
 export function SummaryCards({ summary }: SummaryCardsProps) {
-  const cards: Card[] = [
-    {
-      label: "Total requests",
-      value: formatNumber(summary.totalRequests),
-      tone: "neutral",
-      hint: "every request in range",
-    },
-    {
-      label: "Success rate",
-      value: formatPercent(summary.successRate),
-      tone: "success",
-      hint: "success / total",
-    },
-    {
-      label: "Rate limited",
-      value: formatNumber(summary.rateLimitedCount),
-      tone: "warning",
-      hint: "429 responses",
-    },
-    {
-      label: "Errors",
-      value: formatNumber(summary.errorCount + summary.unauthorizedCount),
-      tone: "danger",
-      hint: "errors + unauthorized",
-    },
-    {
-      label: "Average latency",
-      value: formatMs(summary.avgLatencyMs),
-      tone: "neutral",
-      hint: "mean over range",
-    },
-  ];
+  const failed = summary.errorCount + summary.unauthorizedCount;
+  const plural = (n: number, one: string, many: string) => (n === 1 ? one : many);
 
   return (
-    <div className="summary-cards">
-      {cards.map((c) => (
-        <div key={c.label} className={`summary-card summary-card--${c.tone}`}>
-          <div className="summary-card__label">{c.label}</div>
-          <div className="summary-card__value">{c.value}</div>
-          <div className="summary-card__hint">{c.hint}</div>
+    <section>
+      {summary.totalRequests === 0 ? (
+        <p className="lede">Nothing came through in this period.</p>
+      ) : (
+        <p className="lede">
+          <strong>{formatNumber(summary.totalRequests)}</strong>{" "}
+          {plural(summary.totalRequests, "request", "requests")} in this period.{" "}
+          <strong>{formatNumber(summary.successCount)}</strong> went through,{" "}
+          <strong>{formatNumber(summary.rateLimitedCount)}</strong>{" "}
+          {plural(summary.rateLimitedCount, "was", "were")} rate limited and{" "}
+          <strong>{formatNumber(failed)}</strong> failed or {plural(failed, "was", "were")} rejected.
+        </p>
+      )}
+      <dl className="stats" style={{ marginTop: 20 }}>
+        <div>
+          <dt>Requests</dt>
+          <dd>{formatNumber(summary.totalRequests)}</dd>
         </div>
-      ))}
-    </div>
+        <div>
+          <dt>Success rate</dt>
+          <dd>{formatPercent(summary.successRate)}</dd>
+        </div>
+        <div className="is-warn">
+          <dt>Rate limited</dt>
+          <dd>{formatNumber(summary.rateLimitedCount)}</dd>
+        </div>
+        <div className="is-bad">
+          <dt>Failed or rejected</dt>
+          <dd>{formatNumber(failed)}</dd>
+        </div>
+        <div>
+          <dt>Average latency</dt>
+          <dd>{formatMs(summary.avgLatencyMs)}</dd>
+        </div>
+      </dl>
+    </section>
   );
 }

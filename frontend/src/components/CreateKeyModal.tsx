@@ -136,7 +136,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
           <>
             <div className="modal__header">
               <h2 id="create-key-title" className="modal__title">
-                Create API key
+                New key
               </h2>
               <button
                 type="button"
@@ -160,7 +160,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
                   type="text"
                   value={form.name}
                   onChange={(e) => update("name", e.target.value)}
-                  placeholder="Production mobile app"
+                  placeholder="Mobile app"
                   autoFocus
                   required
                   maxLength={80}
@@ -171,7 +171,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
               </label>
               <div className="field-row">
                 <label className="field">
-                  <span className="field__label">Capacity (tokens)</span>
+                  <span className="field__label">Burst size</span>
                   <input
                     className="input"
                     type="number"
@@ -185,7 +185,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
                   )}
                 </label>
                 <label className="field">
-                  <span className="field__label">Refill / second</span>
+                  <span className="field__label">Requests per second</span>
                   <input
                     className="input"
                     type="number"
@@ -201,7 +201,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
                 </label>
               </div>
               <label className="field">
-                <span className="field__label">Expires at (optional)</span>
+                <span className="field__label">Expires (optional)</span>
                 <input
                   className="input"
                   type="datetime-local"
@@ -225,7 +225,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
                   Cancel
                 </button>
                 <button type="submit" className="btn btn--primary" disabled={submitting}>
-                  {submitting ? <Spinner label="Creating…" /> : "Create key"}
+                  {submitting ? <Spinner label="Creating" /> : "Create key"}
                 </button>
               </div>
             </form>
@@ -233,7 +233,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
         ) : (
           <>
             <div className="modal__header">
-              <h2 className="modal__title">Your new API key</h2>
+              <h2 className="modal__title">Copy your key now</h2>
               <button
                 type="button"
                 className="modal__close"
@@ -245,11 +245,12 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
             </div>
             <div className="reveal">
               <div className="banner banner--warning" role="alert">
-                <strong>You cannot see this key again.</strong> Store it somewhere
-                safe now — only a hashed copy is kept on the server.
+                <strong>This is the only time you will see it.</strong> The server
+                keeps a hash, not the key, so it can’t be shown again. Paste it
+                somewhere safe before you close this.
               </div>
               <label className="field">
-                <span className="field__label">Full key</span>
+                <span className="field__label">Key</span>
                 <textarea
                   className="input input--mono"
                   readOnly
@@ -260,7 +261,7 @@ export function CreateKeyModal({ apiId, open, onClose, onCreated }: CreateKeyMod
               </label>
               <div className="modal__actions">
                 <button type="button" className="btn btn--primary" onClick={copyKey}>
-                  {copied ? "Copied!" : "Copy key"}
+                  {copied ? "Copied" : "Copy key"}
                 </button>
                 <button type="button" className="btn btn--ghost" onClick={onClose}>
                   Done

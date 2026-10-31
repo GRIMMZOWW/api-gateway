@@ -12,17 +12,16 @@ function messageOf(error: unknown): string {
     return error.message || `Request failed (${error.status} ${error.code})`;
   }
   if (error instanceof Error) return error.message;
-  return "Something went wrong.";
+  return "Something went wrong. Try again in a moment.";
 }
 
 export function ErrorState({ error, onRetry }: ErrorStateProps) {
   return (
     <div className="error-state" role="alert">
-      <div className="error-state__icon" aria-hidden="true">!</div>
       <p className="error-state__msg">{messageOf(error)}</p>
       {onRetry && (
         <button type="button" className="btn btn--default" onClick={onRetry}>
-          Retry
+          Try again
         </button>
       )}
     </div>
