@@ -12,10 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 
-/**
- * Issues and parses HS256 JWTs. Subject is the user id; a {@code role} claim holds the
- * role name. Token lifetime is {@link JwtProperties#ttlMinutes()} minutes.
- */
+/** Issues and parses HS256 JWTs. */
 @Service
 public class JwtService {
 
@@ -39,10 +36,6 @@ public class JwtService {
             .compact();
     }
 
-    /**
-     * @return the parsed token, or {@code null} if the signature is invalid, the token
-     *         is expired, or the body is malformed.
-     */
     public ParsedToken parse(String token) {
         try {
             Claims claims = Jwts.parser()

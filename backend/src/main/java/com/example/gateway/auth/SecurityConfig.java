@@ -17,18 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-/**
- * Spring Security 6 configuration:
- * <ul>
- *   <li>Stateless (no session); CSRF disabled because auth uses a Bearer header (spec #11).</li>
- *   <li>JWT filter runs before {@code UsernamePasswordAuthenticationFilter}.</li>
- *   <li>{@code /api/auth/register}, {@code /api/auth/login}, actuator health/info, and
- *       {@code /gw/**} are public. Everything else requires authentication. The gateway
- *       controller does its own {@code X-API-Key} check, so {@code /gw/**} is permitted
- *       here (spec: gateway is not protected by JWT).</li>
- *   <li>CORS is registered only for {@code /api/**} (spec #10: not on {@code /gw}).</li>
- * </ul>
- */
+/** Spring Security 6 configuration: Stateless (no session); CSRF disabled because auth uses a Bearer header. */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -48,7 +37,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Spec security requirement #1: BCrypt strength 10 or higher.
+        // BCrypt strength 10 or higher.
         return new BCryptPasswordEncoder(10);
     }
 
@@ -61,7 +50,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // CORS only on /api/** per spec security requirement #10.
+        // CORS only on /api/** per.
         source.registerCorsConfiguration("/api/**", config);
         return source;
     }

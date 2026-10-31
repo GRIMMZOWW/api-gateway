@@ -3,10 +3,7 @@ package com.example.gateway.common;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-/**
- * Helper to read the authenticated user id from the {@link SecurityContextHolder}.
- * The JWT filter stores the user id (Long) as the authentication principal.
- */
+/** Helper to read the authenticated user id from the SecurityContextHolder. */
 public final class SecurityUtils {
 
     private SecurityUtils() {}

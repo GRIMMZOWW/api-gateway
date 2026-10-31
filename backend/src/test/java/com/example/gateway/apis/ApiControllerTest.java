@@ -27,13 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * MockMvc test of {@link ApiController}. Security filters are disabled so the
- * controller is reached directly; {@link ApiService} is mocked. The
- * {@code @WebMvcTest} slice picks up {@code GlobalExceptionHandler}
- * ({@code @RestControllerAdvice}) so the spec error-body format is exercised.
- * No DB, no full Spring context.
- */
+/** MockMvc test of ApiController. */
 @WebMvcTest(ApiController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class ApiControllerTest {

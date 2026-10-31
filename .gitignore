@@ -13,7 +13,7 @@ target/
 .env.local
 *.local
 
-# Frontend (Phase 8)
+# Frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
@@ -21,3 +21,7 @@ frontend/.vite/
 # OS
 .DS_Store
 Thumbs.db
+
+# Windows folder files
+desktop.ini
+folderico-*.ico

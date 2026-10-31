@@ -15,15 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * REST controller for the {@code /api/apis} endpoints (spec Phase 2).
- * Authentication is enforced by {@code SecurityConfig}; this controller reads
- * the caller's id from {@link SecurityUtils#currentUserId()} for owner scoping.
- *
- * <p>The {@code GET /{id}} endpoint calls {@link ApiService#getOwnedApi} which
- * returns the entity (for reuse by other services); the controller converts it
- * to an {@link ApiResponse} so the entity never reaches the wire.
- */
+/** REST controller for the /api/apis endpoints. */
 @RestController
 @RequestMapping("/api/apis")
 public class ApiController {

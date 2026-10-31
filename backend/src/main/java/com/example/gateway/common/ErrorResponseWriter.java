@@ -9,11 +9,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.UUID;
 
-/**
- * Writes the spec error body directly to an HTTP response. Used by Spring Security's
- * {@code AuthenticationEntryPoint} and {@code AccessDeniedHandler}, which run before
- * a controller is reached and therefore outside {@link GlobalExceptionHandler}.
- */
+/** Writes the error body directly to an HTTP response. */
 @Component
 public class ErrorResponseWriter {
 

@@ -55,11 +55,7 @@ class RateLimiterRegistryTest {
         assertThat(registry.size()).isZero();
     }
 
-    /**
-     * Spec unit test: 100 threads on one bucket with capacity 50 allow exactly 50.
-     * The bucket's {@code tryConsume} is {@code synchronized}, so concurrent consumes are
-     * serialized and never over-allow.
-     */
+    /** 100 threads sharing one bucket with capacity 50 should be allowed exactly 50 times. */
     @Test
     void concurrency100ThreadsCapacity50AllowsExactly50() throws InterruptedException {
         RateLimiterRegistry registry = new RateLimiterRegistry(() -> 0L); // frozen clock -> no refill

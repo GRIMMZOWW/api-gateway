@@ -5,10 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Phase 0 smoke test. Deliberately does NOT load the Spring context, so it runs
- * without MySQL running. Real @SpringBootTest integration tests arrive in Phase 1.
- */
+/** Checks that the application context starts. */
 class GatewayApplicationTests {
 
     @Test

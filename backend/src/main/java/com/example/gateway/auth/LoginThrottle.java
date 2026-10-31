@@ -6,11 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
 
-/**
- * Throttles login attempts to 5 per minute per client IP using a {@link TokenBucket}
- * per IP (spec security requirement #6). Reuses the same {@code TokenBucket} class that
- * the gateway uses for per-key rate limiting in Phase 5.
- */
+/** Throttles login attempts to 5 per minute per client IP using a TokenBucket per IP. */
 @Component
 public class LoginThrottle {
 

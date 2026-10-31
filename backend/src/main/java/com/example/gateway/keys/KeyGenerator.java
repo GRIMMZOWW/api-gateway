@@ -5,19 +5,7 @@ import org.springframework.stereotype.Component;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-/**
- * Generates a new API key: {@code "gk_" + base64url(32 random bytes)} without
- * padding.
- *
- * <p>The full key is 46 characters: 3 for {@code "gk_"} and 43 for the unpadded
- * base64url encoding of 32 bytes (256 bits of entropy). The first 11 characters
- * ({@code "gk_" + 8}) become the stored display {@code key_prefix}; the SHA-256
- * hex of the full key becomes the stored {@code key_hash}.
- *
- * <p>The full key is returned exactly once, in the create response, and is
- * never logged or persisted. Delegates prefix/hash derivation to
- * {@link KeyHasher} to keep all hashing logic in one place.
- */
+/** Generates a new API key: "gk_" + base64url(32 random bytes) without padding. */
 @Component
 public class KeyGenerator {
 
@@ -41,9 +29,6 @@ public class KeyGenerator {
         return new GeneratedKey(fullKey, prefix, hash);
     }
 
-    /**
-     * The freshly generated key. Hold {@code fullKey} only long enough to return
-     * it from the create endpoint; never log it.
-     */
+    /** The freshly generated key. */
     public record GeneratedKey(String fullKey, String prefix, String hash) {}
 }

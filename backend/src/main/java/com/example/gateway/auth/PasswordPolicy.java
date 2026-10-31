@@ -7,10 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Enforces the password policy: minimum 8 characters, at least one letter and one digit
- * (spec security requirement #1).
- */
+/** Enforces the password policy: minimum 8 characters, at least one letter and one digit. */
 @Component
 public class PasswordPolicy {
 

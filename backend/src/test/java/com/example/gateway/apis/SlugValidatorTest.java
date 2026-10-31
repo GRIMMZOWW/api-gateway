@@ -5,9 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Pure unit test for {@link SlugValidator}. No Spring context, no DB.
- */
+/** Pure unit test for SlugValidator. */
 class SlugValidatorTest {
 
     private final SlugValidator validator = new SlugValidator();

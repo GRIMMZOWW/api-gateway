@@ -4,11 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Plain unit test of {@link KeyHasher}. Confirms the hash is the canonical
- * SHA-256 hex of the input (verified against the well-known digest of "abc")
- * and that {@code prefixOf} returns the first 11 characters.
- */
+/** Plain unit test of KeyHasher. */
 class KeyHasherTest {
 
     private final KeyHasher hasher = new KeyHasher();

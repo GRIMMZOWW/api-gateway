@@ -5,17 +5,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-/**
- * Validates API slugs per spec security requirement #8.
- *
- * <p>Regex: {@code ^[a-z0-9]([a-z0-9-]{1,48}[a-z0-9])$} — 3 to 50 chars,
- * lowercase alphanumeric and internal hyphens; no leading/trailing hyphen.
- *
- * <p>Reserved slugs (rejected): {@code api}, {@code admin}, {@code gw},
- * {@code health}, {@code actuator}. These collide with gateway/management routes.
- *
- * <p>Pure component (no dependencies) so it can be unit-tested directly.
- */
+/** Validates API slugs per. */
 @Component
 public class SlugValidator {
 

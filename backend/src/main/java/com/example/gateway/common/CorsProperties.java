@@ -2,9 +2,7 @@ package com.example.gateway.common;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Bound to {@code cors.allowed-origin}. The single allowed frontend origin.
- */
+/** Bound to cors.allowed-origin. */
 @ConfigurationProperties(prefix = "cors")
 public record CorsProperties(String allowedOrigin) {
 

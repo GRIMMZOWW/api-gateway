@@ -13,16 +13,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * JPA entity for the {@code api_keys} table (Flyway V1 schema).
- *
- * <p>The full key is never persisted: only {@code key_prefix} (for display,
- * e.g. {@code "gk_ab12cd34..."}) and {@code key_hash} (SHA-256 hex, for lookup)
- * are stored. {@code ddl-auto=validate} checks this mapping against the Flyway
- * schema on startup, so every {@link Instant} column declares
- * {@code columnDefinition="DATETIME(3)"} and {@code key_hash} declares
- * {@code CHAR(64)} to match the schema exactly.
- */
+/** JPA entity for the api_keys table (Flyway V1 schema). */
 @Entity
 @Table(name = "api_keys")
 public class ApiKey {

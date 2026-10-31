@@ -5,9 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-/**
- * Entry point for the API Gateway backend.
- */
+/** Entry point for the API Gateway backend. */
 @SpringBootApplication
 @ConfigurationPropertiesScan
 @EnableScheduling

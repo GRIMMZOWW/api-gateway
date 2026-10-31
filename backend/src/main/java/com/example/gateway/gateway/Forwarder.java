@@ -15,16 +15,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 
-/**
- * Forwards a single gateway request to the upstream API using Spring's {@link RestClient}.
- *
- * <p>Per-request connect and read timeouts come from the API's {@code timeout_ms}. Redirects
- * are not followed (returned to the client as-is) via {@link NoRedirectHttpRequestFactory}.
- *
- * <p>Connection failures map to {@code 502 UPSTREAM_ERROR} (spec core logic, error table).
- * Read timeouts map to {@code 504 UPSTREAM_TIMEOUT}. Any upstream HTTP status (4xx or 5xx) is
- * returned as-is and is a {@code SUCCESS} outcome in the usage log.
- */
+/** Forwards a single gateway request to the upstream API using Spring's RestClient. */
 @Component
 public class Forwarder {
 
@@ -80,10 +71,7 @@ public class Forwarder {
         }
     }
 
-    /**
-     * SimpleClientHttpRequestFactory subclass that disables HTTP redirect following per
-     * the spec ("Do not follow redirects, return them to the client as they are").
-     */
+    /** Does not follow redirects; they are returned to the client as they are. */
     static final class NoRedirectHttpRequestFactory extends SimpleClientHttpRequestFactory {
         @Override
         protected void prepareConnection(HttpURLConnection connection, String httpMethod) throws IOException {

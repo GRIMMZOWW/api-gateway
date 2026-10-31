@@ -23,12 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * MockMvc test of {@link AuthController}. Security filters are disabled so the controller
- * is reached directly; {@link AuthService} and {@link LoginThrottle} are mocked. No DB.
- * {@code GlobalExceptionHandler} (a {@code @RestControllerAdvice}) is picked up by the
- * slice so the error-body format is exercised.
- */
+/** MockMvc test of AuthController. */
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {

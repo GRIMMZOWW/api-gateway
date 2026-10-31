@@ -10,15 +10,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * JPA entity for the {@code apis} table. Hibernate {@code ddl-auto=validate} checks
- * this mapping against the Flyway {@code V1__init.sql} schema on startup.
- *
- * <p>Per spec D0.8, every {@link Instant} column uses {@code columnDefinition="DATETIME(3)"}
- * so validation matches the Flyway {@code DATETIME(3)} columns. The {@code enabled}
- * boolean column is non-null with a schema default of {@code TRUE}; the entity sets
- * the value explicitly on create so the DB default is never relied upon.
- */
+/** JPA entity for the apis table. */
 @Entity
 @Table(name = "apis")
 public class Api {

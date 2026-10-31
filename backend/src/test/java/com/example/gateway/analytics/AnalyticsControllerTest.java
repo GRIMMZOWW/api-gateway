@@ -19,13 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * MockMvc slice test of {@link AnalyticsController}. Security filters are disabled so
- * the controller is reached directly; {@link AnalyticsService} is mocked. The
- * {@code @WebMvcTest} slice picks up {@code GlobalExceptionHandler}
- * ({@code @RestControllerAdvice}) so {@link ApiException}s surface with their HTTP
- * status and spec error body.
- */
+/** MockMvc slice test of AnalyticsController. */
 @WebMvcTest(AnalyticsController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AnalyticsControllerTest {

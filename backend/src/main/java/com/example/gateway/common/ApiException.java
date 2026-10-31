@@ -4,11 +4,7 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
-/**
- * Application exception that carries the spec error code, HTTP status, optional
- * validation {@code fields} map, and optional {@code retryAfterSeconds} (used to
- * emit the {@code Retry-After} header on {@code 429} responses).
- */
+/** An error with a code, an HTTP status, and optionally field messages or a Retry-After value. */
 public class ApiException extends RuntimeException {
 
     private final String code;

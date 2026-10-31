@@ -4,11 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Plain unit test of {@link KeyGenerator}. No Spring context, no DB. Verifies
- * the key format, prefix derivation, hash format, uniqueness across calls, and
- * hash stability for a fixed full key.
- */
+/** Plain unit test of KeyGenerator. */
 class KeyGeneratorTest {
 
     private final KeyGenerator generator = new KeyGenerator(new KeyHasher());

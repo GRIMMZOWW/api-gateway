@@ -13,12 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-/**
- * Reads the {@code Authorization: Bearer <jwt>} header on every request. If the token
- * is valid, the user id is stored as the authentication principal so {@code SecurityUtils}
- * can read it later. Invalid or missing tokens leave the context empty; Spring Security's
- * {@code AuthenticationEntryPoint} then returns {@code 401}.
- */
+/** Reads the Authorization: Bearer header on every request. */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 

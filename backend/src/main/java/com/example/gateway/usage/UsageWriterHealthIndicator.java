@@ -4,11 +4,7 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
-/**
- * Exposes the usage writer's {@code droppedUsageEvents} counter and current queue size on
- * the actuator health endpoint (spec core logic #5: "If the queue is full, drop the event
- * and increment a droppedUsageEvents counter exposed on the actuator health endpoint").
- */
+/** Exposes the usage writer's droppedUsageEvents counter and current queue size on the actuator health endpoint. */
 @Component
 public class UsageWriterHealthIndicator implements HealthIndicator {
 

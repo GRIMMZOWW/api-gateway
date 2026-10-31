@@ -24,17 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Pure unit test of {@link AnalyticsService}. {@link JdbcTemplate} and
- * {@link ApiService} are mocked with Mockito ({@link MockitoExtension}); no Spring
- * context and no database.
- *
- * <p>The summary test drives the real {@link RowMapper} against a stubbed
- * {@link ResultSet} so the {@code successRate}/{@code avgLatencyMs} rounding is
- * exercised end to end. The time-series test stubs {@code query(...)} to return rows
- * for only two of the three expected hourly buckets and asserts the missing bucket is
- * gap-filled with zeros in Java.
- */
+/** Pure unit test of AnalyticsService. */
 @ExtendWith(MockitoExtension.class)
 class AnalyticsServiceTest {
 

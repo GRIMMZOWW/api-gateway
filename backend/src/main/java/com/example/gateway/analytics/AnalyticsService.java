@@ -15,24 +15,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Read-only analytics queries over the {@code usage_logs} table.
- *
- * <p>Every method first scopes the request to the caller's ownership of {@code apiId}
- * via {@link ApiService#getOwnedApi(Long, Long)} (an API owned by someone else resolves
- * to {@code NOT_FOUND} / 404, never 403), then builds an {@link AnalyticsQueryRange}
- * (defaults + 90-day maximum), clamps any {@code limit}, and runs a single
- * <em>parameterized</em> JdbcTemplate query — every bind value is a {@code ?}
- * placeholder, never string concatenation.
- *
- * <p>The time series is grouped by a {@code DATE_FORMAT} bucket in SQL and then
- * gap-filled in Java so the returned list is always contiguous from {@code from} to
- * {@code to} with zero-valued buckets where there were no rows.
- */
+/** Read-only analytics queries over the usage_logs table. */
 @Service
 public class AnalyticsService {
 
-    /** Parses the {@code DATE_FORMAT} bucket strings back into UTC {@link Instant}s. */
+    /** Parses the DATE_FORMAT bucket strings back into UTC Instants. */
     private static final DateTimeFormatter BUCKET_FORMATTER =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -49,9 +36,7 @@ public class AnalyticsService {
         this.apiService = apiService;
     }
 
-    /**
-     * Aggregate counts for one API over a range.
-     */
+    /** Aggregate counts for one API over a range. */
     public SummaryResponse summary(Long userId, Long apiId, Instant from, Instant to) {
         apiService.getOwnedApi(userId, apiId);
         AnalyticsQueryRange range = AnalyticsQueryRange.of(apiId, from, to);
@@ -73,7 +58,7 @@ public class AnalyticsService {
             long unauthorized = rs.getLong("unauthorized_count");
             long errors = rs.getLong("error_count");
             // getDouble/getLong return 0 when the SQL value is NULL (no rows), which is
-            // exactly the spec's "total=0 => successRate=0.0, avgLatencyMs=0" rule.
+            // so with no requests, successRate and avgLatencyMs come out as 0.
             double avgLatency = rs.getDouble("avg_latency_ms");
             double successRate = total > 0 ? round1(success * 100.0 / total) : 0.0;
             return new SummaryResponse(total, success, rateLimited, unauthorized, errors,
@@ -81,9 +66,7 @@ public class AnalyticsService {
         }, apiId, Timestamp.from(range.from()), Timestamp.from(range.to()));
     }
 
-    /**
-     * Hourly (or daily) time series with gap filling.
-     */
+    /** Hourly (or daily) time series with gap filling. */
     public List<TimeseriesPoint> timeseries(Long userId, Long apiId, Instant from,
                                             Instant to, String bucket) {
         apiService.getOwnedApi(userId, apiId);
@@ -143,9 +126,7 @@ public class AnalyticsService {
         return filled;
     }
 
-    /**
-     * Top request paths by volume.
-     */
+    /** Top request paths by volume. */
     public List<TopPath> topPaths(Long userId, Long apiId, Instant from, Instant to, int limit) {
         apiService.getOwnedApi(userId, apiId);
         AnalyticsQueryRange range = AnalyticsQueryRange.of(apiId, from, to);
@@ -167,10 +148,7 @@ public class AnalyticsService {
         ), apiId, Timestamp.from(range.from()), Timestamp.from(range.to()), clamped);
     }
 
-    /**
-     * Per-API-key usage rollup. Rows with a NULL {@code api_key_id} are skipped
-     * (an inner JOIN naturally excludes them).
-     */
+    /** Per-API-key usage rollup. */
     public List<KeyUsage> keys(Long userId, Long apiId, Instant from, Instant to) {
         apiService.getOwnedApi(userId, apiId);
         AnalyticsQueryRange range = AnalyticsQueryRange.of(apiId, from, to);
@@ -201,9 +179,7 @@ public class AnalyticsService {
         }, apiId, Timestamp.from(range.from()), Timestamp.from(range.to()));
     }
 
-    /**
-     * Newest usage rows (newest first).
-     */
+    /** Newest usage rows (newest first). */
     public List<RecentRequest> recent(Long userId, Long apiId, Instant from, Instant to, int limit) {
         apiService.getOwnedApi(userId, apiId);
         AnalyticsQueryRange range = AnalyticsQueryRange.of(apiId, from, to);
@@ -237,7 +213,7 @@ public class AnalyticsService {
         return Math.round(v * 10.0) / 10.0;
     }
 
-    /** Clamp {@code limit} into {@code [1, max]}; a non-positive value falls back to {@code def}. */
+    /** Clamp limit into [1, max]; a non-positive value falls back to def. */
     private static int clamp(int limit, int def, int max) {
         if (limit <= 0) {
             return def;

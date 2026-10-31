@@ -6,23 +6,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-/**
- * Hashes a full API key to its SHA-256 hex digest and derives its display prefix.
- *
- * <p>SHA-256 (not BCrypt) is intentional here: an API key carries ~256 bits of
- * its own entropy, so a fast hash is safe and cheap. The gateway hashes the
- * incoming key on every request to look it up by {@code key_hash}, so a slow
- * password hash would dominate request latency.
- */
+/** Hashes a full API key to its SHA-256 hex digest and derives its display prefix. */
 @Component
 public class KeyHasher {
 
     private static final char[] HEX = "0123456789abcdef".toCharArray();
     private static final int PREFIX_LENGTH = 11;
 
-    /**
-     * @return the SHA-256 of {@code fullKey} as 64 lowercase hex characters.
-     */
     public String hash(String fullKey) {
         try {
             MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
@@ -34,10 +24,6 @@ public class KeyHasher {
         }
     }
 
-    /**
-     * @return the first 11 characters of {@code fullKey} ({@code "gk_" + 8}),
-     *         for display like {@code "gk_ab12cd34..."}.
-     */
     public String prefixOf(String fullKey) {
         return fullKey.substring(0, PREFIX_LENGTH);
     }

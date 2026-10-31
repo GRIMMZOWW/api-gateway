@@ -25,16 +25,16 @@ and logged.
 
 ```mermaid
 flowchart LR
-    C[Client with X-API-Key] --> G[/gw/slug/...]
-    G --> H{Hash key and look it up}
-    H -- unknown, revoked, expired --> E1[401]
-    H -- key belongs to another API --> E2[403]
-    H --> R{Token bucket has a token?}
-    R -- no --> E3[429 + Retry-After]
-    R -- yes --> F[Forward to your server]
-    F --> U[Your upstream API]
-    F --> L[(Usage log, written in batches)]
-    L --> D[Dashboard]
+    C["Client with X-API-Key"] --> G["/gw/slug/..."]
+    G --> H{"Hash the key and look it up"}
+    H -- "unknown, revoked or expired" --> E1["401"]
+    H -- "key is for another API" --> E2["403"]
+    H --> R{"Token bucket has a token?"}
+    R -- "no" --> E3["429 + Retry-After"]
+    R -- "yes" --> F["Forward to your server"]
+    F --> U["Your API"]
+    F --> L[("Usage log, written in batches")]
+    L --> D["Dashboard"]
 ```
 
 If the upstream refuses the connection the client gets `502`, and if it is too slow, `504`.
@@ -47,7 +47,7 @@ If the upstream refuses the connection the client gets `502`, and if it is too s
 | Database | MySQL 8 with Flyway migrations |
 | Auth | JWT (HS256) for the dashboard, BCrypt for passwords |
 | Caching | Caffeine, for key lookups |
-| Frontend | React 19, Vite, React Router 7, Recharts, plain CSS (no UI library) |
+| Frontend | JavaScript (JSX), React 19, Vite, React Router 7, Recharts, plain CSS |
 | Tests | JUnit 5, Mockito, Spring Boot Test (105 tests) |
 
 ## Run it on your machine
@@ -100,7 +100,7 @@ Click Revoke on the key and run the call again: it returns `401` straight away.
 | Analytics | `GET /api/analytics/summary`, `timeseries`, `top-paths`, `keys`, `recent` |
 | Gateway | `ANY /gw/{slug}/**` with an `X-API-Key` header |
 
-The full list, with request and response shapes, is in [`docs/SPEC.md`](docs/SPEC.md).
+The reasoning behind the main choices is in [`docs/DESIGN.md`](docs/DESIGN.md).
 
 ## Security choices
 
@@ -123,14 +123,13 @@ lookup and the creation one atomic operation with `ConcurrentHashMap.compute`. T
 ```
 backend/    Spring Boot app, organised by feature (auth, apis, keys, gateway, ratelimit, usage, analytics)
 frontend/   React dashboard
-docs/       Specification and design decisions
-loadtest/   Scripts for load testing (not run yet)
+docs/       Design notes
 ```
 
 ## Limits and next steps
 
 - **One server only.** Rate limit buckets live in memory, so running several copies would give each key several limits. Fixing this properly means moving the buckets to something shared like Redis.
 - **Usage logs are written in batches.** If the queue is full, events are dropped and counted on the health endpoint.
-- **No load test numbers yet.** The scripts are in `loadtest/`, but I have not run them, so I am not quoting any figures.
+- **No load test yet.** I have not measured how many requests per second it handles, so I am not quoting any numbers.
 - The frontend has a home page, a docs page, an overview across all your APIs, and a page for each API.
 - Next: run the load test and share the rate limit counters between servers.

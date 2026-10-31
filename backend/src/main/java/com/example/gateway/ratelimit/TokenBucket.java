@@ -2,19 +2,7 @@ package com.example.gateway.ratelimit;
 
 import java.util.function.LongSupplier;
 
-/**
- * A thread-safe token bucket rate limiter. One instance per key (or per login IP).
- *
- * <p>Fields: {@code capacity} (burst size), {@code refillPerSec} (tokens added per
- * second), {@code tokens} (starts full), {@code lastRefillNanos}.
- *
- * <p>{@link #tryConsume()} is {@code synchronized} on the bucket. It reads the clock,
- * adds {@code elapsedSeconds * refillPerSec} (capped at {@code capacity}), then either
- * consumes one token (allow) or computes a {@code Retry-After} (deny).
- *
- * <p>An injectable {@link LongSupplier} clock lets unit tests advance time without
- * {@code Thread.sleep}.
- */
+/** A thread-safe token bucket rate limiter. */
 public class TokenBucket {
 
     private final int capacity;
@@ -41,13 +29,7 @@ public class TokenBucket {
         this.lastRefillNanos = clock.getAsLong();
     }
 
-    /**
-     * Attempts to consume one token.
-     *
-     * @return a {@link Decision}; on allow {@code remaining} is {@code floor(tokens)},
-     *         on deny {@code retryAfterSeconds} is {@code ceil((1 - tokens) / refillPerSec)},
-     *         minimum 1.
-     */
+    /** Attempts to consume one token. */
     public synchronized Decision tryConsume() {
         long now = clock.getAsLong();
         long elapsedNanos = now - lastRefillNanos;

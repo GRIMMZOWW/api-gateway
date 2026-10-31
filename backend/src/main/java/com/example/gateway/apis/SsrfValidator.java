@@ -14,50 +14,26 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.function.Function;
 
-/**
- * SSRF validator (spec security requirement #5). Rejects upstream URLs whose
- * scheme is not {@code http}/{@code https}, and (unless
- * {@code gateway.allow-private-upstreams} is true) any URL resolving to a
- * private or loopback address:
- * <ul>
- *   <li>IPv4: {@code 127.0.0.0/8}, {@code 10.0.0.0/8}, {@code 172.16.0.0/12},
- *       {@code 192.168.0.0/16}, {@code 169.254.0.0/16}, {@code 0.0.0.0}.</li>
- *   <li>IPv6: {@code ::1}, {@code fc00::/7}, {@code ::}.</li>
- * </ul>
- *
- * <p>The {@code hostResolver} is injected so tests can stub DNS answers
- * (no network). The production constructor wires {@link InetAddress#getAllByName(String)},
- * wrapped to fit {@link Function} (which cannot throw checked exceptions).
- */
+/** SSRF validator. */
 @Component
 public class SsrfValidator {
 
     private final GatewayProperties props;
     private final Function<String, InetAddress[]> hostResolver;
 
-    /**
-     * Production constructor used by Spring. Resolves hosts via
-     * {@link InetAddress#getAllByName(String)}.
-     */
+    /** Production constructor used by Spring. */
     @Autowired
     public SsrfValidator(GatewayProperties props) {
         this(props, SsrfValidator::defaultResolve);
     }
 
-    /**
-     * Test/override constructor. Allows the caller to inject a deterministic
-     * resolver so no real DNS lookups happen.
-     */
+    /** Test/override constructor. */
     SsrfValidator(GatewayProperties props, Function<String, InetAddress[]> hostResolver) {
         this.props = props;
         this.hostResolver = hostResolver;
     }
 
-    /**
-     * Validates the given URL. Throws {@code ApiException("SSRF_BLOCKED", ...)}
-     * (HTTP 400) on any disallowed scheme or resolved private/loopback address,
-     * or if the host cannot be parsed/resolved.
-     */
+    /** Validates the given URL. */
     public void validate(String url) {
         if (url == null || url.isBlank()) {
             throw blocked();
@@ -98,17 +74,13 @@ public class SsrfValidator {
         }
     }
 
-    /**
-     * Returns true if the address is in a private/loopback/link-local/wildcard
-     * range. Explicit range checks (rather than relying solely on the JDK's
-     * semantic predicates) so behaviour is deterministic across JVMs.
-     */
+    /** Returns true if the address is in a private/loopback/link-local/wildcard range. */
     boolean isPrivate(InetAddress addr) {
-        // 0.0.0.0 and :: (wildcard/any) — never a valid upstream target.
+        // 0.0.0.0 and:: (wildcard/any) — never a valid upstream target.
         if (addr.isAnyLocalAddress()) {
             return true;
         }
-        // 127.0.0.0/8 and ::1 loopback.
+        // 127.0.0.0/8 and::1 loopback.
         if (addr.isLoopbackAddress()) {
             return true;
         }

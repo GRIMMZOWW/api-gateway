@@ -6,20 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
 
-/**
- * Holds one {@link TokenBucket} per active key id in a {@link ConcurrentHashMap} (spec
- * core logic #2). Each gateway request asks for one token via {@link #tryConsume}.
- *
- * <p>Self-healing on limit change: if a key's {@code capacity}/{@code refillPerSec} was
- * changed via PATCH, the next request detects the mismatch and rebuilds the bucket with
- * the new limits — so the new limits take effect immediately without an explicit eviction
- * hook (equivalent to the spec's "remove its bucket so the next request creates a new one").
- *
- * <p>A scheduled job runs every 10 minutes and removes buckets unused for 1 hour.
- *
- * <p>Known limit (README): buckets live in one JVM, so this works for a single gateway
- * instance only. The stretch goal moves them to Redis with an atomic Lua script.
- */
+/** Holds one TokenBucket per active key id in a ConcurrentHashMap. */
 @Component
 public class RateLimiterRegistry {
 

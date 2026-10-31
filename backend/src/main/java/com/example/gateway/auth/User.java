@@ -12,13 +12,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 
-/**
- * JPA entity for the {@code users} table. Hibernate {@code ddl-auto=validate} checks
- * this against the Flyway schema on startup.
- *
- * <p>Per spec D0.8, every {@link Instant} column uses {@code columnDefinition="DATETIME(3)"}
- * so validation matches the Flyway {@code DATETIME(3)} columns.
- */
+/** JPA entity for the users table. */
 @Entity
 @Table(name = "users")
 public class User {

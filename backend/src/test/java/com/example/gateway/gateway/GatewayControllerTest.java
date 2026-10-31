@@ -37,11 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * MockMvc test of the gateway flow (Phase 5: cache-backed key lookup, per-key token-bucket
- * rate limit, {@code X-RateLimit-*} + {@code Retry-After} headers). No usage logging yet.
- * No DB; all collaborators mocked.
- */
+/** MockMvc test of the gateway flow. */
 @WebMvcTest(GatewayController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class GatewayControllerTest {

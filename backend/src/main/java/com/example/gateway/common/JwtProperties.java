@@ -4,10 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.nio.charset.StandardCharsets;
 
-/**
- * Bound to {@code jwt.*}. The compact constructor fails fast at application startup if
- * {@code JWT_SECRET} is missing or shorter than 32 bytes (spec security requirement #2).
- */
+/** Bound to jwt.*. */
 @ConfigurationProperties(prefix = "jwt")
 public record JwtProperties(String secret, int ttlMinutes) {
 

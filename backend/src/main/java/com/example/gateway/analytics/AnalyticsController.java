@@ -11,16 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Instant;
 import java.util.List;
 
-/**
- * REST endpoints for usage analytics. Every endpoint requires Bearer JWT (the management
- * security filter enforces it; {@code SecurityUtils.currentUserId()} resolves the caller)
- * and scopes results to APIs owned by that caller: a missing or foreign {@code apiId}
- * resolves to {@code NOT_FOUND} (404) inside {@link AnalyticsService}.
- *
- * <p>{@code from}/{@code to} are ISO-8601 UTC instants and default to the last 24 hours.
- * The maximum range is 90 days ({@code RANGE_TOO_WIDE} / 400). {@code limit} defaults and
- * caps are enforced in the service.
- */
+/** REST endpoints for usage analytics. */
 @RestController
 @RequestMapping("/api/analytics")
 public class AnalyticsController {
@@ -74,10 +65,7 @@ public class AnalyticsController {
         return analyticsService.recent(SecurityUtils.currentUserId(), apiId, from, to, limit);
     }
 
-    /**
-     * Reject a missing {@code apiId} up front with a 400 rather than letting it reach
-     * the service as {@code null} (which would otherwise surface as a generic error).
-     */
+    /** Reject a missing apiId up front with a 400 rather than letting it reach the service as null (which would otherwise surface as a generic error). */
     private void requireApiId(Long apiId) {
         if (apiId == null) {
             throw new ApiException(

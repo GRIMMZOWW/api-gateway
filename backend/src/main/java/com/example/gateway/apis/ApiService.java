@@ -11,22 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Business logic for the {@code /api/apis} endpoints.
- *
- * <p>Enforces (per spec):
- * <ul>
- *   <li>Slug format + reserved-word check (security #8) → {@code VALIDATION_ERROR}
- *       with {@code fields.slug}.</li>
- *   <li>Timeout range 500–30000 ms → {@code VALIDATION_ERROR} with
- *       {@code fields.timeoutMs}.</li>
- *   <li>SSRF validation of {@code upstreamBaseUrl} (security #5) →
- *       {@code SSRF_BLOCKED}.</li>
- *   <li>Max 10 APIs per user (security #9) → {@code API_LIMIT_REACHED}.</li>
- *   <li>Owner scoping: an API owned by another user is returned as
- *       {@code NOT_FOUND} (HTTP 404, never 403).</li>
- * </ul>
- */
+/** Business logic for the /api/apis endpoints. */
 @Service
 public class ApiService {
 
@@ -82,11 +67,7 @@ public class ApiService {
             .toList();
     }
 
-    /**
-     * Returns the owned {@link Api} entity for internal use by other services
-     * (keys, analytics). Throws {@code NOT_FOUND} (HTTP 404) if the API does
-     * not exist or is owned by another user — never 403, per spec.
-     */
+    /** Returns the owned Api entity for internal use by other services (keys, analytics). */
     @Transactional(readOnly = true)
     public Api getOwnedApi(Long userId, Long apiId) {
         if (apiId == null) {

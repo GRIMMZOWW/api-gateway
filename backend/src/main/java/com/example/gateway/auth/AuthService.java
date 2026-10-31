@@ -60,7 +60,7 @@ public class AuthService {
     }
 
     private ApiException invalidCredentials() {
-        // Spec security requirement #7: login failure says only "invalid email or password".
+        // login failure says only "invalid email or password".
         return new ApiException("INVALID_CREDENTIALS", "Invalid email or password.", HttpStatus.UNAUTHORIZED);
     }
 

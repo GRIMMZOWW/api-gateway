@@ -21,24 +21,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Async batched writer for {@code usage_logs} (spec core logic #5).
- *
- * <ul>
- *   <li>The request thread calls {@link #record}, which {@code offer}s onto a bounded
- *       {@link ArrayBlockingQueue} (capacity {@code gateway.usage-queue-capacity}) and
- *       never waits for the database.</li>
- *   <li>If the queue is full, the event is dropped and {@code droppedUsageEvents} is
- *       incremented (exposed on the actuator health endpoint by
- *       {@link UsageWriterHealthIndicator}).</li>
- *   <li>One daemon background thread drains the queue: it waits up to
- *       {@code gateway.usage-flush-interval-ms} for the first event, then drains up to
- *       {@code gateway.usage-batch-size} events and writes them with one
- *       {@code JdbcTemplate.batchUpdate}. In the same pass it updates
- *       {@code api_keys.last_used_at} for the keys seen.</li>
- *   <li>On application shutdown, the remaining events are flushed before exit.</li>
- * </ul>
- */
+/** Async batched writer for usage_logs. */
 @Component
 public class AsyncUsageRecorder implements UsageRecorder {
 
@@ -105,7 +88,7 @@ public class AsyncUsageRecorder implements UsageRecorder {
         flushAll();
     }
 
-    /** Drains the entire queue in batch-size chunks. Used on shutdown and by tests. */
+    /** Drains the entire queue in batch-size chunks. */
     void flushAll() {
         List<UsageEvent> batch = new ArrayList<>(batchSize);
         while (true) {

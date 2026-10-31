@@ -19,10 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Single {@code @RestControllerAdvice} that maps every exception to the spec error body
- * {@code {"error":{"code","message","requestId","fields"}}}.
- */
+/** Single @RestControllerAdvice that maps every exception to the error body {"error":{"code","message","requestId","fields"}}. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

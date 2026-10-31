@@ -10,10 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * Returns {@code 401} with the spec error body when a management endpoint is reached
- * without a valid Bearer token.
- */
+/** Returns 401 with the error body when a management endpoint is reached without a valid Bearer token. */
 @Component
 public class AuthEntryPoint implements AuthenticationEntryPoint {
 

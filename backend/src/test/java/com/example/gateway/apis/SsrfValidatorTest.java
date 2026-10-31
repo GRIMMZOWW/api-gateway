@@ -13,12 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Pure unit test for {@link SsrfValidator}. Uses a fake {@code hostResolver} so
- * no DNS lookups happen: hostnames are mapped to fixed IP arrays; IP literals
- * in the URL pass through {@link InetAddress#getAllByName(String)} which does
- * <em>not</em> hit the network for literal addresses.
- */
+/** Pure unit test for SsrfValidator. */
 class SsrfValidatorTest {
 
     private static final Map<String, String[]> HOST_MAP = Map.of(
@@ -26,11 +21,7 @@ class SsrfValidatorTest {
         "public.example.com", new String[]{"93.184.216.34"}
     );
 
-    /**
-     * Fake resolver: returns canned IPs for known hostnames; for IP-literal
-     * inputs (e.g. "10.0.0.1", "::1", "0.0.0.0") it delegates to
-     * {@link InetAddress#getAllByName(String)} which parses them without DNS.
-     */
+    /** Fake resolver: returns canned IPs for known hostnames; for IP-literal inputs (e.g. */
     private final Function<String, InetAddress[]> fakeResolver = host -> {
         try {
             String[] ips = HOST_MAP.get(host);

@@ -24,12 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * MockMvc slice test of {@link KeyController}. Security filters are disabled and
- * {@link KeyService} is mocked, so no DB or {@code apis} wiring is needed. The
- * {@code @RestControllerAdvice} {@code GlobalExceptionHandler} is picked up by
- * the slice, so the error-body format is exercised end-to-end.
- */
+/** MockMvc slice test of KeyController. */
 @WebMvcTest(KeyController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class KeyControllerTest {

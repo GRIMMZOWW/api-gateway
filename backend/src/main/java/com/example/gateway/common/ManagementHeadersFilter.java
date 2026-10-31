@@ -11,11 +11,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Adds {@code Cache-Control: no-store} and {@code X-Content-Type-Options: nosniff} to
- * every management response ({@code /api/**}) per spec security requirement #10.
- * The gateway ({@code /gw/**}) intentionally gets neither header.
- */
+/** Adds Cache-Control: no-store and X-Content-Type-Options: nosniff to every management response (/api/**) per. */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class ManagementHeadersFilter extends OncePerRequestFilter {

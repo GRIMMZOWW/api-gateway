@@ -10,11 +10,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
-/**
- * Returns {@code 403} with the spec error body when an authenticated user lacks access.
- * IDOR (a resource owned by another user) is handled in services as {@code 404 NOT_FOUND},
- * per spec, so this handler only fires for genuinely forbidden actions.
- */
+/** Returns 403 with the error body when an authenticated user lacks access. */
 @Component
 public class ForbiddenHandler implements AccessDeniedHandler {
 

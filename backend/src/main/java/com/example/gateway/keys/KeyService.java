@@ -13,24 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Application service for API keys.
- *
- * <p>Every method is scoped to the calling user: the parent API is resolved
- * through {@link ApiService#getOwnedApi(Long, Long)}, which throws
- * {@code NOT_FOUND} (404) when the caller does not own it. The 404 — never 403 —
- * is deliberate so that the existence of another tenant's API or key does not
- * leak.
- *
- * <p>The full key is returned only from {@link #create}, exactly once, and only
- * the prefix + hash are ever persisted. Revoke and limit-changing PATCH calls
- * evict the key from the lookup cache via the optional {@link KeyCacheEvictor}
- * (no-op until Phase 5 wires the real Caffeine-backed implementation).
- */
+/** Application service for API keys. */
 @Service
 public class KeyService {
 
-    /** Spec business rule #9: at most this many ACTIVE keys per API. */
+    /** At most this many active keys per API. */
     static final int MAX_ACTIVE_KEYS_PER_API = 20;
 
     private static final int DEFAULT_CAPACITY = 10;
@@ -53,10 +40,7 @@ public class KeyService {
         this.cacheEvictor = cacheEvictor;
     }
 
-    /**
-     * Create a new key under {@code apiId}. Generates the key, persists only the
-     * prefix + SHA-256 hash, and returns the full key exactly once.
-     */
+    /** Create a new key under apiId. */
     @Transactional
     public CreateKeyResponse create(Long userId, Long apiId, CreateKeyRequest request) {
         // Scope: throws NOT_FOUND if the caller does not own the API.
@@ -81,9 +65,7 @@ public class KeyService {
         return new CreateKeyResponse(toResponse(entity), generated.fullKey());
     }
 
-    /**
-     * List all keys under {@code apiId}. Never returns the full key.
-     */
+    /** List all keys under apiId. */
     @Transactional(readOnly = true)
     public List<KeyResponse> list(Long userId, Long apiId) {
         apiService.getOwnedApi(userId, apiId);
@@ -92,11 +74,7 @@ public class KeyService {
             .toList();
     }
 
-    /**
-     * Partial update of {@code name}/{@code capacity}/{@code refillPerSec}.
-     * Status and expiry are not editable here. Evicts the cache entry when
-     * limits are touched.
-     */
+    /** Partial update of name/capacity/refillPerSec. */
     @Transactional
     public KeyResponse update(Long userId, Long keyId, UpdateKeyRequest request) {
         ApiKey key = mustOwnKey(userId, keyId);
@@ -145,10 +123,7 @@ public class KeyService {
         return toResponse(saved);
     }
 
-    /**
-     * Permanently revoke the key. Sets {@code status=REVOKED} and {@code revokedAt=now},
-     * then evicts the cache entry so the next request is rejected.
-     */
+    /** Permanently revoke the key. */
     @Transactional
     public void revoke(Long userId, Long keyId) {
         ApiKey key = mustOwnKey(userId, keyId);
@@ -158,11 +133,7 @@ public class KeyService {
         cacheEvictor.ifPresent(e -> e.evictKey(key.getKeyHash()));
     }
 
-    /**
-     * Load a key by id and verify the caller owns its parent API. Throws
-     * {@code NOT_FOUND} (404) for either a missing key or a key whose API is
-     * owned by someone else.
-     */
+    /** Load a key by id and verify the caller owns its parent API. */
     private ApiKey mustOwnKey(Long userId, Long keyId) {
         ApiKey key = apiKeyRepository.findById(keyId)
             .orElseThrow(this::notFound);

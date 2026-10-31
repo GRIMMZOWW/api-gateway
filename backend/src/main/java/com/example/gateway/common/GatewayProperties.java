@@ -2,10 +2,7 @@ package com.example.gateway.common;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/**
- * Bound to the {@code gateway.*} properties in {@code application.yml}.
- * Used from Phase 4 onward (forwarding limits, cache, usage queue, SSRF toggle).
- */
+/** Bound to the gateway.* properties in application.yml. */
 @ConfigurationProperties(prefix = "gateway")
 public record GatewayProperties(
     int maxBodyBytes,

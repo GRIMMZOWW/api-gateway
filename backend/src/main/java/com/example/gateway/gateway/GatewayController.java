@@ -36,14 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * The gateway endpoint {@code /gw/{slug}/**}. Implements the full request flow from the spec:
- * request id; resolve slug; read and validate {@code X-API-Key} (cache-backed); check the key
- * belongs to the slug's API; check the API is enabled; per-key token-bucket rate limit with
- * {@code X-RateLimit-*} headers and {@code Retry-After} on {@code 429}; read the body
- * (max 1 MB); forward; copy the upstream response back; queue a usage log row on every
- * outcome (unknown slug is not logged — there is no api_id).
- */
+/** The gateway endpoint /gw/{slug}/**. */
 @RestController
 public class GatewayController {
 
@@ -182,7 +175,7 @@ public class GatewayController {
                                          String method, String path, long start,
                                          HttpServletRequest request, RateLimitHeaders rl) {
         int latencyMs = (int) ((System.nanoTime() - start) / 1_000_000);
-        // Only requests for an existing API are logged (spec: unknown slug has no api_id).
+        // Only requests for an existing API are logged.
         if (apiId != null) {
             usageRecorder.record(new UsageEvent(apiId, apiKeyId, requestId, method, path,
                 status, latencyMs, outcome, Instant.now()));
@@ -225,7 +218,7 @@ public class GatewayController {
         return ResponseEntity.status(result.statusCode()).headers(out).body(result.body());
     }
 
-    /** Path after {@code /gw/{slug}}, query string removed, cut at 500 characters. */
+    /** Path after /gw/{slug}, query string removed, cut at 500 characters. */
     private String pathAfter(String slug, HttpServletRequest request) {
         String uri = request.getRequestURI();
         String prefix = "/gw/" + slug;

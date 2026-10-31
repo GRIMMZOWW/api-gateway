@@ -9,17 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Caffeine-backed lookup of API keys by their SHA-256 hash (spec core logic #3).
- *
- * <ul>
- *   <li>Maximum {@code 10,000} entries, expire 60 seconds after write.</li>
- *   <li>Cache misses (unknown hash) are NOT cached, so a newly created key works on the
- *       next request.</li>
- *   <li>Implements {@link KeyCacheEvictor} so {@link KeyService} can invalidate a key on
- *       revoke or limit change — a revoked key stops working on the very next request.</li>
- * </ul>
- */
+/** Caffeine-backed lookup of API keys by their SHA-256 hash. */
 @Component
 public class KeyLookupService implements KeyCacheEvictor {
 
